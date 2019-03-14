@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Page Title</title>
+    <link rel="stylesheet" type="text/css" href="main.css">
+</head>
+<body>
+    <div id="root" class="mainFrame full-size"></div>
+
+    <script>
+        var appRoot = document.getElementById('root');
+        
+        var init = require('./init');
+        //var init = imports.init();
+
+        init(appRoot);
+        
+        appRoot.addEventListener('mousedown', function(e) {
+            imports.eventManager().executeHandlers('mousedown', e);
+        });
+        appRoot.addEventListener('mousemove', function(e) {
+            imports.eventManager().executeHandlers('mousemove', e);
+        });
+        appRoot.addEventListener('mouseup', function(e) {
+            imports.eventManager().executeHandlers('mouseup', e);
+        });
+    </script>
+</body>
+</html>
