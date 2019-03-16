@@ -61,7 +61,6 @@ module.exports = {
             },
             splitDown: function() {
                 var newlyCreated;
-
                 if (this.splitType !== 'vertical') {
                     this.splitType = 'vertical';
                     var newCont = module.exports.create(this.parentContainer);
@@ -74,8 +73,9 @@ module.exports = {
                     newCont.appendChild(cont);
                     newCont.ctx.subContainers.push(cont);
 
-                    cont.style.height = '50%';
+
                     cont.style.width = '100%';
+                    cont.style.height = '50%';
                     cont.style.left = '0%';
                     cont.style.top = '0%';
 
@@ -86,27 +86,26 @@ module.exports = {
                     additionalCont.style.top = '50%';
                     newCont.ctx.subContainers.push(additionalCont);
                     newlyCreated = additionalCont;
-                }
-                else if (this.splitType == 'vertical') {
+                } else if (this.splitType == 'vertical') {
                     var newCont = module.exports.create(this.parentContainer, true);
                     this.parentContainer.ctx.subContainers.push(newCont);
                     var h = 50 * cont.offsetHeight / this.parentContainer.offsetHeight;
                     cont.style.height = h + '%';
                     newCont.style.height = h + '%';
-                    var l = 100 * (cont.offsetTop + cont.offsetHeight) / this.parentContainer.offsetHeight + '%';
+                    var l = 100 * (cont.offsetTop + cont.offsetHeight) / this.parentContainer.offsetHeight;
                     newCont.style.top = l + '%';
                     newlyCreated = newCont;
                 }
                 newlyCreated.ctx.splitType = 'vertical';
-                
+
                 var dash = document.createElement('div');
                 this.parentContainer.appendChild(dash);
                 dash.setAttribute('class', 'separator-horizontal positionable');
                 dash.style.height = '4px';
                 dash.style.width = '100%';
-
+                
                 dash.style.top = 100 * (newlyCreated.offsetTop - 2) / this.parentContainer.offsetHeight + '%';
-
+                
                 dash.ctx = {
                     affected: [cont, newlyCreated]
                 };
