@@ -20,6 +20,11 @@ function showFolder(path, expanded) {
     icon.setAttribute('class', 'arrow-icon');
 
     icon.addEventListener('mousedown', function() {
+        if (folder.ctx.subfiles) {
+            icon.setAttribute('class', 'arrow-icon');
+        } else {
+            icon.setAttribute('class', 'arrow-icon-rotated');
+        }
         folder.ctx.expand();
     });
 

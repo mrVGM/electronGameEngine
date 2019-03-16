@@ -36,6 +36,16 @@ html, body {
     background-size: 10px 10px;
     top: 5px;
 }
+.arrow-icon-rotated {
+    position: relative;
+    width: 10px;
+    height: 10px;
+    background-image: url("Assets/Icons/play-button.png");
+    transform: rotate(90deg);
+    background-repeat: no-repeat;
+    background-size: 10px 10px;
+    top: 5px;
+}
 .separator-vertical {
     background-color: black;
     cursor: col-resize;
