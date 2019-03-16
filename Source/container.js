@@ -56,8 +56,30 @@ module.exports = {
                 dash.style.left = 100 * (newlyCreated.offsetLeft - 2) / this.parentContainer.offsetWidth + '%';
                 
                 dash.ctx = {
-                    affected: [cont, newlyCreated]
+                    affected: [cont, newlyCreated],
+                    parentContainer: this.parentContainer
                 };
+
+                dash.addEventListener('mousedown', function(e) {
+                    var slide = document.createElement('div');
+                    slide.setAttribute('class', 'positionable');
+                    slide.style.left = dash.ctx.affected[0].offsetLeft + 'px';
+                    slide.style.width = dash.ctx.affected[0].offsetWidth + dash.ctx.affected[1].offsetWidth + 'px';
+                    slide.style.height = '100%';
+
+                    dash.ctx.parentContainer.appendChild(slide);
+
+                    slide.addEventListener('mousemove', function(e) {
+                        var pos = dash.ctx.affected[0].offsetLeft + e.offsetX;
+                        dash.style.left = 100 * (pos - 2) / dash.ctx.parentContainer.offsetWidth + '%';
+                        dash.ctx.affected[0].style.width = 100 * (pos - dash.ctx.affected[0].offsetLeft) / dash.ctx.parentContainer.offsetWidth + '%';
+                        dash.ctx.affected[1].style.width = 100 * (dash.ctx.affected[1].offsetLeft + dash.ctx.affected[1].offsetWidth - pos) / dash.ctx.parentContainer.offsetWidth + '%';
+                        dash.ctx.affected[1].style.left = 100 * pos / dash.ctx.parentContainer.offsetWidth + '%';
+                    });
+                    slide.addEventListener('mouseup', function(e) {
+                        dash.ctx.parentContainer.removeChild(slide);
+                    });
+                });
             },
             splitDown: function() {
                 var newlyCreated;
@@ -107,8 +129,30 @@ module.exports = {
                 dash.style.top = 100 * (newlyCreated.offsetTop - 2) / this.parentContainer.offsetHeight + '%';
                 
                 dash.ctx = {
-                    affected: [cont, newlyCreated]
+                    affected: [cont, newlyCreated],
+                    parentContainer: this.parentContainer
                 };
+
+                dash.addEventListener('mousedown', function(e) {
+                    var slide = document.createElement('div');
+                    slide.setAttribute('class', 'positionable');
+                    slide.style.left = dash.ctx.affected[0].offsetTop + 'px';
+                    slide.style.height = dash.ctx.affected[0].offsetHeight + dash.ctx.affected[1].offsetHeight + 'px';
+                    slide.style.width = '100%';
+
+                    dash.ctx.parentContainer.appendChild(slide);
+
+                    slide.addEventListener('mousemove', function(e) {
+                        var pos = dash.ctx.affected[0].offsetTop + e.offsetY;
+                        dash.style.top = 100 * (pos - 2) / dash.ctx.parentContainer.offsetHeight + '%';
+                        dash.ctx.affected[0].style.height = 100 * (pos - dash.ctx.affected[0].offsetTop) / dash.ctx.parentContainer.offsetHeight + '%';
+                        dash.ctx.affected[1].style.height = 100 * (dash.ctx.affected[1].offsetTop + dash.ctx.affected[1].offsetHeight - pos) / dash.ctx.parentContainer.offsetHeight + '%';
+                        dash.ctx.affected[1].style.top = 100 * pos / dash.ctx.parentContainer.offsetHeight + '%';
+                    });
+                    slide.addEventListener('mouseup', function(e) {
+                        dash.ctx.parentContainer.removeChild(slide);
+                    });
+                });
             }
         }
         return cont;

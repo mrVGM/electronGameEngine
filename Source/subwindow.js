@@ -15,7 +15,6 @@ module.exports = {
 
         var contents = document.createElement('div');
         contents.style.width = '100%';
-        contents.style.height = 100 - hPerc + '%';
         
         contents.setAttribute('class', 'unselectable');
 
