@@ -22,7 +22,8 @@ module.exports = {
         header.createHeader(h, wnd);
 
         wnd.ctx = {
-            container: parent
+            container: parent,
+            contents: contents
         };
 
         function resize() {

@@ -27,6 +27,13 @@ html, body {
     background-repeat: no-repeat;
     background-size: 10px 10px;
 }
+.arrow-icon {
+    width: 10px;
+    height: 10px;
+    background-image: url("Assets/Icons/play-button.png");
+    background-repeat: no-repeat;
+    background-size: 10px 10px;
+}
 .separator-vertical {
     background-color: black;
     cursor: col-resize;

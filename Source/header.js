@@ -25,9 +25,8 @@ module.exports = {
 
         var windowTypes = require('./windowTypes').windowTypes;
 
-        var wt = windowTypes[0];
         var current = document.createElement('div');
-        current.innerText = wt.type;
+        current.innerText = 'None';
         windowType.appendChild(current);
 
         var expanded = false;
@@ -51,6 +50,7 @@ module.exports = {
                     options.appendChild(tmp);
                     tmp.addEventListener('mousedown', function(evt) {
                         current.innerText = evt.srcElement.wt.type;
+                        evt.srcElement.wt.init(subwindow.ctx.contents);
                         toggle();
                     });
                 }

@@ -1,12 +1,13 @@
 module.exports = {
     windowTypes: [
-        {
-            type: 'None',
-            init: function(parent) {}
-        },
+        
         {
             type: 'Asd',
-            init: function(parent) {}
+            init: function(parent) {
+                console.log('Asd', parent);
+                require('./fileExplorer').init(parent, __dirname);
+                console.log(__dirname);
+            }
         }
     ]
 }
