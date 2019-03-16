@@ -1,22 +1,91 @@
 var fs = require('fs');
+var pathlib = require('path');
+
+function showFile(path) {
+    if (fs.lstatSync(path).isDirectory()) {
+        return showFolder(path);
+    }
+    return showSimpleFile(path);
+}
+
+function showSimpleFile(path) {
+    var file = document.createElement('div');
+    file.innerText = pathlib.basename(path);
+    return file;
+}
+
+function showFolder(path, expanded) {
+    var folder = document.createElement('div');
+    var icon = document.createElement('div');
+    icon.setAttribute('class', 'arrow-icon');
+
+    icon.addEventListener('mousedown', function() {
+        folder.ctx.expand();
+    });
+
+    var name = document.createElement('div');
+    name.style.position = 'relative';
+    name.style.height = '20px';
+    name.appendChild(icon);
+
+    var text = document.createElement('div');
+    text.innerHTML = pathlib.basename(path);
+    text.style.position = 'absolute';
+    text.style.left = '15px';
+    text.style.top = '0px';
+
+    name.appendChild(text);
+
+    folder.appendChild(name);
+
+    folder.ctx = {
+        element: folder,
+        subfiles: undefined,
+        expand: function() {
+            if (!this.subfiles) {
+                this.subfiles = document.createElement('div');
+                
+                this.subfiles.style.position = 'relative';
+                this.subfiles.style.left = '20px';
+
+                this.element.appendChild(this.subfiles);
+
+                var subfiles = this.subfiles;
+
+                fs.readdir(path, function(err, dir) {
+                    for (var i = 0; i < dir.length; ++i) {
+                        var file = showFile(path + '\\' + dir[i]);
+                        subfiles.appendChild(file);
+                    }
+                });
+            }
+            else {
+                this.element.removeChild(this.subfiles);
+                this.subfiles = undefined;
+            }
+        }
+    };
+
+    return folder;
+}
 
 module.exports = {
     fileExplorerContext: {
         currentPath: undefined,
         content: undefined,
         path: undefined,
+        hierarchy: undefined,
         folders: [],
         visualizeContents: function() {
-            if (currentPath) {
-                fs.readdir(pathName, function(err, dir) {
-                    for(var i = 0, l = dir.length; i < l; i++) {
-                        var filePath = dir[i];
-                        var file = document.createElement('div');
-                        file.innerText = filePath;
-                        parent.appendChild(file);
-                    }
-                });
+            if (!this.hierarchy) {
+                this.hierarchy = document.createElement('div');
+                this.content.appendChild(this.hierarchy);
             }
+            while (this.hierarchy.firstChild) {
+                this.hierarchy.removeChild(this.hierarchy.firstChild);
+            }
+
+            this.hierarchy.appendChild(showFile(this.currentPath));
         },
         visualizePath: function() {
             if (!this.path) {
@@ -50,6 +119,7 @@ module.exports = {
                     e.srcElement.ctx.fileExplorer.visualizePath();
                 });
             }
+            this.visualizeContents();
         }
     },
 

@@ -28,11 +28,13 @@ html, body {
     background-size: 10px 10px;
 }
 .arrow-icon {
+    position: relative;
     width: 10px;
     height: 10px;
     background-image: url("Assets/Icons/play-button.png");
     background-repeat: no-repeat;
     background-size: 10px 10px;
+    top: 5px;
 }
 .separator-vertical {
     background-color: black;
