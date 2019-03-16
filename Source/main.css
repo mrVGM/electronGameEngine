@@ -29,11 +29,13 @@ html, body {
 }
 .separator-vertical {
     background-color: black;
-    cursor: col-resize
+    cursor: col-resize;
+    user-select: none;
 }
 .separator-horizontal {
     background-color: black;
-    cursor: row-resize
+    cursor: row-resize;
+    user-select: none;
 }
 .mainFrame {
     position: fixed;
@@ -49,7 +51,7 @@ html, body {
 }
 .window-type {
     position: absolute;
-    left: 25px;
+    margin-left: 25px;
     font-size: 10px;
     user-select: none;
 }
@@ -58,4 +60,12 @@ html, body {
     width: 100%;
     height: 100%;
     margin-top: 15px;
+}
+.window-type-variant {
+    font-size: 10px;
+    height: 10px;
+    user-select: none;
+}
+.unselectable {
+    user-select: none;
 }

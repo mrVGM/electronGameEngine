@@ -5,25 +5,17 @@
     <link rel="stylesheet" type="text/css" href="main.css">
 </head>
 <body>
-    <div id="root" class="mainFrame full-size"></div>
+    <div id="root", class="full-size"></div>
 
     <script>
         var appRoot = document.getElementById('root');
-        
-        var init = require('./init');
-        //var init = imports.init();
+        window.addEventListener('keydown', function(e) {
+            if (e.code === 'F5') {
+                location.reload();
+            }
+        });
 
-        init(appRoot);
-        
-        appRoot.addEventListener('mousedown', function(e) {
-            imports.eventManager().executeHandlers('mousedown', e);
-        });
-        appRoot.addEventListener('mousemove', function(e) {
-            imports.eventManager().executeHandlers('mousemove', e);
-        });
-        appRoot.addEventListener('mouseup', function(e) {
-            imports.eventManager().executeHandlers('mouseup', e);
-        });
+        require('./init')(appRoot);
     </script>
 </body>
 </html>

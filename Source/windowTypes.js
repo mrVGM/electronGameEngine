@@ -1,16 +1,12 @@
-var windowTypes = [
-    {
-        name: 'None',
-        generator: function(root) {
-            console.log('None window');
+module.exports = {
+    windowTypes: [
+        {
+            type: 'None',
+            init: function(parent) {}
+        },
+        {
+            type: 'Asd',
+            init: function(parent) {}
         }
-    },
-    {
-        name: 'Explorer',
-        generator: function(root) {
-            console.log('Explorer window');
-        }
-    }
-];
-
-module.exports = windowTypes;
+    ]
+}

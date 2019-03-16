@@ -34,3 +34,5 @@ app.on('ready', function() {
     var mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
     Menu.setApplicationMenu(mainMenu);
 });
+
+module.exports = mainWindow;
