@@ -11,8 +11,6 @@ module.exports = {
 
         wnd.appendChild(h);
         
-        var hPerc = 100 * h.offsetHeight / wnd.offsetHeight;
-
         var contents = document.createElement('div');
         contents.style.width = '100%';
         
@@ -26,5 +24,11 @@ module.exports = {
         wnd.ctx = {
             container: parent
         };
+
+        function resize() {
+            contents.style.height = parent.offsetHeight - 16 + 'px';
+            setTimeout(resize, 0);
+        }
+        resize();
     }
 }
