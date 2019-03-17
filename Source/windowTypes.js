@@ -8,8 +8,8 @@ module.exports = {
         },
         {
             type: 'Hierarchy',
-            init: function() {
-                console.log('Hierarchy');
+            init: function(parent) {
+                require('./hierarchy/view').init(parent);
             }
         }
     ]
