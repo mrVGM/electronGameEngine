@@ -25,13 +25,17 @@ module.exports = {
 
         var windowTypes = require('./windowTypes').windowTypes;
 
-        var current = document.createElement('div');
+        var current = document.createElement('span');
         current.innerText = 'None';
         windowType.appendChild(current);
 
         var expanded = false;
 
-        var options = document.createElement('div');
+        var space = document.createElement('span');
+        space.innerText = ' ';
+        windowType.appendChild(space);
+        var options = document.createElement('span');
+        
         windowType.appendChild(options);
 
         function toggle(e) {
@@ -44,15 +48,19 @@ module.exports = {
             else {
                 for (var i = 0; i < windowTypes.length; ++i) {
                     var wt = windowTypes[i];
-                    var tmp = document.createElement('div');
+                    var tmp = document.createElement('span');
                     tmp.wt = wt;
                     tmp.innerText = wt.type;
+                    tmp.setAttribute('class', 'window-type-option');
                     options.appendChild(tmp);
                     tmp.addEventListener('mousedown', function(evt) {
                         current.innerText = evt.srcElement.wt.type;
                         evt.srcElement.wt.init(subwindow.ctx.contents);
                         toggle();
                     });
+                    space = document.createElement('span');
+                    space.innerText = ' ';
+                    options.appendChild(space);
                 }
             }
             expanded = !expanded;

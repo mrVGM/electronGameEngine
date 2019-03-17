@@ -130,6 +130,11 @@ module.exports = function() {
         },
 
         init: function(parent, pathName) {
+            while (parent.firstChild) {
+                parent.removeChild(parent.firstChild);
+            }
+
+
             this.fileExplorerContext.currentPath = pathName;
             var content = document.createElement('div');
             content.style.position = 'relative';

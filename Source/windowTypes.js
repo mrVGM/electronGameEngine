@@ -1,10 +1,15 @@
 module.exports = {
     windowTypes: [
-        
         {
-            type: 'File Explorer',
+            type: 'FileExplorer',
             init: function(parent) {
                 require('./fileExplorer')().init(parent, __dirname);
+            }
+        },
+        {
+            type: 'Hierarchy',
+            init: function() {
+                console.log('Hierarchy');
             }
         }
     ]
