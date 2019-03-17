@@ -74,63 +74,70 @@ function showFolder(path, expanded) {
     return folder;
 }
 
-module.exports = {
-    fileExplorerContext: {
-        currentPath: undefined,
-        content: undefined,
-        path: undefined,
-        hierarchy: undefined,
-        folders: [],
-        visualizeContents: function() {
-            if (!this.hierarchy) {
-                this.hierarchy = document.createElement('div');
-                this.content.appendChild(this.hierarchy);
-            }
-            while (this.hierarchy.firstChild) {
-                this.hierarchy.removeChild(this.hierarchy.firstChild);
-            }
-
-            this.hierarchy.appendChild(showFile(this.currentPath));
-        },
-        visualizePath: function() {
-            if (!this.path) {
-                this.path = document.createElement('div');
-                this.content.appendChild(this.path);
-            }
-
-            while (this.path.firstChild) {
-                this.path.removeChild(this.path.firstChild);
-            }
-
-            this.folders = this.currentPath.split('\\');
-            var p = '';
-            for (var i = 0; i < this.folders.length; ++i) {
-                var fld = document.createElement('span');
-                fld.innerText = this.folders[i];
-                var arrow = document.createElement('span');
-                arrow.innerText = ' > ';
-                this.path.appendChild(fld);
-                if (i < this.folders.length - 1) {
-                    this.path.appendChild(arrow);
+module.exports = function() {
+    return {
+        fileExplorerContext: {
+            currentPath: undefined,
+            content: undefined,
+            path: undefined,
+            hierarchy: undefined,
+            folders: [],
+            visualizeContents: function() {
+                if (!this.hierarchy) {
+                    this.hierarchy = document.createElement('div');
+                    this.content.appendChild(this.hierarchy);
                 }
-                p += this.folders[i];
-                fld.ctx = {
-                    path: p,
-                    fileExplorer: this
-                };
-                p += '\\';
-                fld.addEventListener('mousedown', function(e) {
-                    e.srcElement.ctx.fileExplorer.currentPath = e.srcElement.ctx.path;
-                    e.srcElement.ctx.fileExplorer.visualizePath();
-                });
-            }
-            this.visualizeContents();
-        }
-    },
+                while (this.hierarchy.firstChild) {
+                    this.hierarchy.removeChild(this.hierarchy.firstChild);
+                }
 
-    init: function(parent, pathName) {
-        this.fileExplorerContext.currentPath = pathName;
-        this.fileExplorerContext.content = parent;
-        this.fileExplorerContext.visualizePath();
-    }
+                this.hierarchy.appendChild(showFile(this.currentPath));
+            },
+            visualizePath: function() {
+                if (!this.path) {
+                    this.path = document.createElement('div');
+                    this.content.appendChild(this.path);
+                }
+
+                while (this.path.firstChild) {
+                    this.path.removeChild(this.path.firstChild);
+                }
+
+                this.folders = this.currentPath.split('\\');
+                var p = '';
+                for (var i = 0; i < this.folders.length; ++i) {
+                    var fld = document.createElement('span');
+                    fld.innerText = this.folders[i];
+                    var arrow = document.createElement('span');
+                    arrow.innerText = ' > ';
+                    this.path.appendChild(fld);
+                    if (i < this.folders.length - 1) {
+                        this.path.appendChild(arrow);
+                    }
+                    p += this.folders[i];
+                    fld.ctx = {
+                        path: p,
+                        fileExplorer: this
+                    };
+                    p += '\\';
+                    fld.addEventListener('mousedown', function(e) {
+                        e.srcElement.ctx.fileExplorer.currentPath = e.srcElement.ctx.path;
+                        e.srcElement.ctx.fileExplorer.visualizePath();
+                    });
+                }
+                this.visualizeContents();
+            }
+        },
+
+        init: function(parent, pathName) {
+            this.fileExplorerContext.currentPath = pathName;
+            var content = document.createElement('div');
+            content.style.position = 'relative';
+            content.style.left = '10px';
+            parent.appendChild(content);
+
+            this.fileExplorerContext.content = content;
+            this.fileExplorerContext.visualizePath();
+        }
+    };
 };
