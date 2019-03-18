@@ -19,6 +19,8 @@ module.exports = {
     api: {
         visualize: function(go, parent) {
             var el = document.createElement('div');
+            parent.appendChild(el);
+
             var name = document.createElement('div');
             el.appendChild(name);
             var offset = 0;
@@ -62,12 +64,13 @@ module.exports = {
                 this.expand(go);
             }
 
-            parent.appendChild(el);
+            
         },
         expand: function(go) {
             var data = controller.modelsMap[go.id];
 
             var childrenViewElement = document.createElement('div');
+            
             data.viewElement.parentElement.appendChild(childrenViewElement);
             data.childrenViewElement = childrenViewElement;
 

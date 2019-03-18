@@ -6,6 +6,12 @@ module.exports = {
             {
                 name: 'Asd',
                 id: 1,
+                children: [
+                    {
+                        name: 'basd',
+                        id: 2
+                    }
+                ]
             }
         ]
     }
