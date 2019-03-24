@@ -121,6 +121,15 @@ module.exports = {
                     controller.create(id);
                     return;
                 }
+                if (target.getAttribute('contextMenuButton') === 'Delete') {
+                    var controller = require('./controller');
+                    var contextMenu = document.querySelectorAll('[contextMenu]')[0];
+                    var renameForm = document.querySelectorAll('[renameGameObject]')[0];
+                    var id = contextMenu.getAttribute('contextMenu');
+                    id = parseInt(id);
+                    controller.delete(id);
+                    return;
+                }
             });
         },
     }
