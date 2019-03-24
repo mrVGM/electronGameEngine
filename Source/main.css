@@ -88,3 +88,6 @@ html, body {
 .unselectable {
     user-select: none;
 }
+.context-menu {
+    background-color: chartreuse;
+}

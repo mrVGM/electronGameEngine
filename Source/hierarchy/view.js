@@ -1,89 +1,127 @@
-var model = require('./model');
-var controller = require('./controller');
+var viewsTemplatesDir = __dirname + "/viewTemplates/";
+
+var views = {};
 
 module.exports = {
     root: undefined,
+    modal: undefined,
     init: function(parent) {
-        while(parent.firstChild) {
-            parent.removeChild(parent.firstChild);
-        }
+        var fs = require('fs');
+        var t = this;
+        this.root = parent;
+        
+        var viewPaths = ['main.ejs', 'gameObject.ejs'];
+        var index = 0;
 
-        this.root = document.createElement('div');
-        this.root.style.position = 'relative';
-        this.root.style.left = '15px';
-        parent.appendChild(this.root);
-        var cont = document.createElement('div');
-        this.root.appendChild(cont);
-        this.api.visualize(model.selectedPrefab, cont);
+        function loadViews() {
+            fs.readFile(viewsTemplatesDir + viewPaths[index], function (err, data) {
+                views[viewPaths[index]] = data.toString();
+                ++index;
+                if (index < viewPaths.length) {
+                    loadViews();
+                }
+                else {
+                    t.api.refresh();
+                }
+            });
+        }
+        loadViews();
     },
     api: {
-        visualize: function(go, parent) {
-            var el = document.createElement('div');
-            parent.appendChild(el);
-
-            var name = document.createElement('div');
-            el.appendChild(name);
-            var offset = 0;
-            var icon;
-            if (go.children && go.children.length > 0) {
-                icon = document.createElement('div');
-                icon.setAttribute('class', 'arrow-icon');
-                name.appendChild(icon);
-                offset = 15;
-                icon.addEventListener('mousedown', function() {
-                    controller.toggle(go);
-                    if (controller.modelsMap[go.id].expanded) {
-                        icon.setAttribute('class', 'arrow-icon-rotated');
-                    }
-                    else {
-                        icon.setAttribute('class', 'arrow-icon');
-                    }
-                });
-            }
-        
-            var text = document.createElement('div');
-            text.innerHTML = go.name;
-            text.style.position = 'absolute';
-            text.style.left = offset + 'px';
-            text.style.top = '0px';
-        
-            name.appendChild(text);
-            
-            name.style.height = '20px';
-
-            if (!controller.modelsMap[go.id]) {
-                controller.modelsMap[go.id] = {
-                    viewElement: el,
-                    expanded: false
-                };
-            }
-
-            controller.modelsMap[go.id].viewElement = el;
-
-            if (controller.modelsMap[go.id].expanded) {
-                this.expand(go);
-            }
-
-            
+        renderGO: function(go) {
+            var ejs = require('ejs');
+            var controller = require('./controller');
+            return ejs.render(views['gameObject.ejs'], {go: go, controller: controller, api: this});
         },
-        expand: function(go) {
-            var data = controller.modelsMap[go.id];
+        refresh: function() {
+            var parent = module.exports.root;
+            var t = this;
 
-            var childrenViewElement = document.createElement('div');
-            
-            data.viewElement.parentElement.appendChild(childrenViewElement);
-            data.childrenViewElement = childrenViewElement;
-
-            childrenViewElement.style.position = 'relative';
-            childrenViewElement.style.left = '15px';
-
-            for (var i = 0; i < go.children.length; ++i) {
-                var cur = go.children[i];
-                this.visualize(cur, childrenViewElement);
+            while(parent.firstChild) {
+                parent.removeChild(parent.firstChild);
             }
+
+            var ejs = require('ejs');
+            var model = require('./model');
+            parent.innerHTML = ejs.render(views['main.ejs'], {model: model.selectedPrefab, api: this});
+
+            var hierarchyRoot = document.querySelectorAll('[hierarchyRoot]')[0];
+            var modalPlace = document.querySelectorAll('[modalPlace]')[0];
+
+            var modalMode = false;
+
+            hierarchyRoot.addEventListener('click', function(e) {
+                if (modalMode) {
+                    return;
+                }
+
+                var target = e.target;
+                if (target.getAttribute('expandButton')) {
+                    var controller = require('./controller');
+                    var id = target.getAttribute('expandButton');
+                    id = parseInt(id);
+                    controller.toggleGameObject(id);
+                    return;
+                }
+            });
+
+            hierarchyRoot.addEventListener('contextmenu', function(e) {
+                if (modalMode) {
+                    return;
+                }
+
+                var target = e.target;
+                if (target.getAttribute('gameObject')) {
+                    var cur = target;
+                    var coord = [e.offsetX, e.offsetY];
+                    while (cur !== module.exports.root) {
+                        coord[0] += cur.offsetLeft;
+                        coord[1] += cur.offsetTop;
+                        cur = cur.parentElement;
+                    }
+                    var contextMenu = document.querySelectorAll('[contextMenu]')[0];
+                    contextMenu.style.left = coord[0] + 'px';
+                    contextMenu.style.top = coord[1] + 'px';
+                    contextMenu.setAttribute('contextMenu', target.getAttribute('gameObject'));
+                    modalMode = true;
+                    return;
+                }
+            });
+
+            modalPlace.addEventListener('click', function(e) {
+                var target = e.target;
+                if (target.getAttribute('contextMenuButton') === 'Close') {
+                    t.refresh();
+                    return;
+                }
+                if (target.getAttribute('contextMenuButton') === 'Rename') {
+                    var controller = require('./controller');
+                    var contextMenu = document.querySelectorAll('[contextMenu]')[0];
+                    var renameForm = document.querySelectorAll('[renameGameObject]')[0];
+                    var id = contextMenu.getAttribute('contextMenu');
+                    id = parseInt(id);
+                    contextMenu.style.left = '-100px';
+                    renameForm.style.left = '50%';
+                    renameForm.style.top = '50%';
+                    var input = renameForm.children[0];
+                    input.value = "GameObject";
+                    input.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter' && input.value !== '') {
+                            controller.remane(id, input.value);
+                        }
+                    });
+                    return;
+                }
+                if (target.getAttribute('contextMenuButton') === 'Create') {
+                    var controller = require('./controller');
+                    var contextMenu = document.querySelectorAll('[contextMenu]')[0];
+                    var renameForm = document.querySelectorAll('[renameGameObject]')[0];
+                    var id = contextMenu.getAttribute('contextMenu');
+                    id = parseInt(id);
+                    controller.create(id);
+                    return;
+                }
+            });
         },
-        collapse: function(go) {
-            controller.modelsMap[go.id].childrenViewElement.parentElement.removeChild(controller.modelsMap[go.id].childrenViewElement);
-        }
     }
 }

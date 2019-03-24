@@ -1,35 +1,43 @@
-module.exports = {
-    modelsMap: {},
-    toggle: function(go) {
-        var view = require('./view');
-        if (!this.modelsMap[go.id].expanded) {
-            view.api.expand(go);
-            this.modelsMap[go.id].expanded = true;
-        } else {
-            view.api.collapse(go);
-            this.modelsMap[go.id].expanded = false;
-            var mm = this.modelsMap;
-            mm[go.id].childrenViewElement = undefined;
-
-            function eraseViews(gameObject) {
-                var cur = mm[gameObject.id];
-                if (!cur) {
-                    return;
-                }
-                mm[gameObject.id].viewElement = undefined;
-                mm[gameObject.id].childrenViewElement = undefined;
-
-                if (!gameObject.children) {
-                    return;
-                }
-                for (var i = 0; i < gameObject.children.length; ++i) {
-                    eraseViews(gameObject.children[i]);
-                }
-            }
-
-            for (var i = 0; i < go.children.length; ++i) {
-                eraseViews(go.children[i]);
-            }
+function searchId(go, id) {
+    if (go.id === id) {
+        return go;
+    }
+    for (var i = 0; i < go.children.length; ++i) {
+        var res = searchId(go.children[i], id);
+        if (res) {
+            return res;
         }
+    }
+}
+
+module.exports = {
+    gameObjectProps: {},
+    toggleGameObject: function(id) {
+        if (!this.gameObjectProps[id]) {
+            this.gameObjectProps[id] = {};
+        }
+        if (!this.gameObjectProps[id].expanded) {
+            this.gameObjectProps[id].expanded = false;
+        }
+        this.gameObjectProps[id].expanded = !this.gameObjectProps[id].expanded;
+        var view = require('./view');
+        view.api.refresh();
+    },
+    remane: function(id, newName) {
+        var model = require('./model');
+        var go = searchId(model.selectedPrefab, id);
+        go.name = newName;
+        var view = require('./view');
+        view.api.refresh();
+    },
+    create: function(id) {
+        var model = require('./model');
+        var newGO = model.createGameObject();
+        var go = searchId(model.selectedPrefab, id);
+
+        console.log(id, go, model.selectedPrefab);
+        go.children.push(newGO);
+        var view = require('./view');
+        view.api.refresh();
     }
 }
