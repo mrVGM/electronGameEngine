@@ -2,9 +2,14 @@
     <% var name = fileEntry.path.split('\\'); %>
     <% name = name[name.length - 1]; %>
     <div style="height: 15px;">
-        <div><%= name %></div>
+        <% if (fileEntry.isDir && fileEntry.expanded) { %>
+            <div class="arrow-icon-rotated" expandButton="<%= fileEntry.path %>"></div>
+        <% } else if (fileEntry.isDir) { %>
+            <div class="arrow-icon" expandButton="<%= fileEntry.path %>"></div>
+        <% } %>
+        <div style="position: absolute; left: 15px; top: 0px;" ><%= name %></div>
     </div>
-    <% if (fileEntry.isDir && fileEntry.children.length > 0) { %>
+    <% if (fileEntry.isDir && fileEntry.expanded && fileEntry.children.length > 0) { %>
         <div style="position: relative; left: 15px">
             <% for (var i = 0; i < fileEntry.children.length; ++i) { %>
                 <%- api.visualizeFileEntry(fileEntry.children[i]) %>

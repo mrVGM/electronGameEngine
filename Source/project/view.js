@@ -9,7 +9,7 @@ var view = {
             }
 
             var ejs = require('ejs');
-            var tree = require('./model').tree;
+            var tree = require('./controller').tree;
             var html = ejs.render(viewTemplates['main.ejs'], {tree: tree, api: this});
             view.rootElement.innerHTML = html;
         },
@@ -37,7 +37,7 @@ var view = {
                 });
                 return;
             }
-            require('./model').getProjectDir();
+            view.api.refresh();
         }
 
         loadViews();

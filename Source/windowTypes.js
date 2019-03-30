@@ -3,7 +3,10 @@ module.exports = {
         {
             type: 'FileExplorer',
             init: function(parent) {
-                require('./project/view').init(parent);
+                require('./project/model').init(function() {
+                    require('./project/controller').init();
+                    require('./project/view').init(parent);
+                });
             }
         },
         {
