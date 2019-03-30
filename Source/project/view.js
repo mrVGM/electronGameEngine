@@ -13,6 +13,9 @@ var view = {
                 return;
             }
         },
+        contextMenu: function(e) {
+            console.log('Context menu!');
+        },
         refresh: function() {
             while (view.rootElement.firstChild) {
                 view.rootElement.removeChild(view.rootElement.firstChild);
@@ -30,6 +33,7 @@ var view = {
     init: function(parent) {
         this.rootElement = parent;
         this.rootElement.addEventListener('click', this.api.clickEvent);
+        this.rootElement.addEventListener('contextmenu', this.api.contextMenu);
         var viewFiles = ['main.ejs', 'fileEntry.ejs'];
 
         var fs = require('fs');
