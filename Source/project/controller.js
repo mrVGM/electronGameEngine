@@ -16,8 +16,13 @@ var controller = {
         this.tree.id = this.idCount++;
         this.viewMap[this.tree.id] = this.tree;
     },
-    expand: function(id) {
+    expand: function(id, expanded) {
         var node = this.viewMap[id];
+        var repeat = false;
+        if (expanded !== undefined && expanded === node.expanded) {
+            repeat = true;
+        }
+
         node.expanded = !node.expanded;
         if (node.children) {
             var view = require('./view');
@@ -45,7 +50,28 @@ var controller = {
             }
             var view = require('./view');
             view.api.refresh();
+
+            if (repeat) {
+                controller.expand(id);
+            }
         });
+    },
+    createPrefab(data, path, callback) {
+        var file = path + '\\' + data.name + '.prefab';
+        var fs = require('fs');
+        if (fs.existsSync(file)) {
+            var index = 1;
+            file = path + '\\' + data.name + index + '.prefab';
+            while (fs.existsSync(file)) {
+                ++index;
+                file = path + '\\' + data.name + index + '.prefab';
+            }
+        }
+        console.log(file);
+        var maxId = require('../hierarchy/model').idCounter;
+
+        var model = require('./model');
+        model.createFile(file, JSON.stringify({maxID: maxId, tree: data}), callback);
     }
 };
 

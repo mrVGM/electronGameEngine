@@ -64,6 +64,18 @@ var model = {
     tree: {
         path: undefined,
     },
+    createFile: function(path, data, callbask) {
+        var fs = require('fs');
+        fs.writeFile(path, data, function(err) {
+            if (err) {
+                console.log(err);
+            }
+            model.flushAssetsMap(model.projectRoot + '\\assetsMap.json');
+            var view = require('./view');
+            callbask();
+        });
+        model.assetsMap.assets[path] = model.assetsMap.idCount++;
+    },
     assetsMap: {},
 };
 

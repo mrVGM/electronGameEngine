@@ -8,9 +8,9 @@
             <div class="arrow-icon" directoryExpandButton="<%= fileEntry.id %>"></div>
         <% } %>
         <% if (fileEntry.isDir) { %>
-            <div style="position: absolute; left: 15px; top: 0px;" fileType="dir"><%= name %></div>
+            <div style="position: absolute; left: 15px; top: 0px;" fileType="dir" fileEntryId="<%= fileEntry.id %>"><%= name %></div>
         <% } else { %>
-            <div style="position: absolute; left: 15px; top: 0px;" fileType="simple"><%= name %></div>
+            <div style="position: absolute; left: 15px; top: 0px;" fileType="simple" fileEntryId="<%= fileEntry.id %>"><%= name %></div>
         <% } %>
     </div>
     <% if (fileEntry.isDir && fileEntry.expanded && fileEntry.children.length > 0) { %>
