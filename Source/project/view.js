@@ -3,7 +3,7 @@ var viewTemplates = {};
 var view = {
     rootElement: undefined,
     api: {
-        clickEventListener: function(e) {
+        clickEvent: function(e) {
             var target = e.target;
             if (target.getAttribute('directoryExpandButton')) {
                 var id = target.getAttribute('directoryExpandButton');
@@ -29,7 +29,7 @@ var view = {
     },
     init: function(parent) {
         this.rootElement = parent;
-        this.rootElement.addEventListener('click', this.api.clickEventListener);
+        this.rootElement.addEventListener('click', this.api.clickEvent);
         var viewFiles = ['main.ejs', 'fileEntry.ejs'];
 
         var fs = require('fs');

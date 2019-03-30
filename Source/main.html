@@ -15,6 +15,11 @@
             }
         });
 
+        appRoot.addEventListener('mouseup', function(e) {
+            var dragContext = require('./dragContext');
+            dragContext.mouseUp(e);
+        });
+
         require('./init')(appRoot);
     </script>
 </body>

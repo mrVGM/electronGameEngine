@@ -69,5 +69,9 @@ module.exports = {
             go.children = arr;
         }
         view.api.refresh();
+    },
+    getGO: function(id) {
+        var model = require('./model');
+        return searchId(model.selectedPrefab, id);
     }
 }

@@ -64,6 +64,21 @@ module.exports = {
                     return;
                 }
             });
+            
+            hierarchyRoot.addEventListener('mousedown', function(e) {
+                var target = e.target;
+                if (e.button !== 0) {
+                    return;
+                }
+                if (target.getAttribute('gameobject')) {
+                    var dragContext = require('../dragContext');
+                    dragContext.ctx.type = 'gameObject';
+                    var controller = require('./controller');
+                    var id = target.getAttribute('gameobject');
+                    id = parseInt(id);
+                    dragContext.ctx.data = controller.getGO(id);
+                }
+            });
 
             hierarchyRoot.addEventListener('contextmenu', function(e) {
                 if (modalMode) {
