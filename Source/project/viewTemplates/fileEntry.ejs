@@ -1,11 +1,11 @@
-<div>
+<div style="position: relative;">
     <% var name = fileEntry.path.split('\\'); %>
     <% name = name[name.length - 1]; %>
-    <div style="height: 15px;">
+    <div style="height: 15px; position: relative;">
         <% if (fileEntry.isDir && fileEntry.expanded) { %>
-            <div class="arrow-icon-rotated" expandButton="<%= fileEntry.path %>"></div>
+            <div class="arrow-icon-rotated" directoryExpandButton="<%= fileEntry.id %>"></div>
         <% } else if (fileEntry.isDir) { %>
-            <div class="arrow-icon" expandButton="<%= fileEntry.path %>"></div>
+            <div class="arrow-icon" directoryExpandButton="<%= fileEntry.id %>"></div>
         <% } %>
         <div style="position: absolute; left: 15px; top: 0px;" ><%= name %></div>
     </div>
