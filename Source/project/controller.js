@@ -46,6 +46,7 @@ var controller = {
                 else {
                     child.isDir = false;
                 }
+                child.parent = node;
                 node.children.push(child);
             }
             var view = require('./view');
@@ -72,6 +73,30 @@ var controller = {
 
         var model = require('./model');
         model.createFile(file, JSON.stringify({maxID: maxId, tree: data}), callback);
+    },
+    rename: function(id, newName) {
+        var node = controller.viewMap[id];
+        var parent = node.parent;
+        var path = parent.path + '\\' + newName;
+        var fs = require('fs');
+        var view = require('./view');
+        if (fs.existsSync(path)) {
+            view.api.refresh();
+            return;
+        }
+        fs.rename(node.path, path, function(err) {
+            var model = require('./model');
+            var id = model.assetsMap.assets[node.path];
+            delete model.assetsMap.assets[node.path];
+            model.assetsMap.assets[path] = id;
+            node.path = path;
+            model.flushAssetsMap();
+            view.api.refresh();
+        });
+    },
+    createFolder: function(path, callback) {
+        var model = require('./model');
+        model.createFolder(path, callback);
     }
 };
 

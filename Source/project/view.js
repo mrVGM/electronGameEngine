@@ -1,11 +1,69 @@
 var viewTemplates = {};
 
+var modalMode = false;
+var modalSource = undefined;
+
 var view = {
     rootElement: undefined,
     api: {
         clickEvent: function(e) {
             var target = e.target;
+
+            if (target.getAttribute('contextmenuButton')) {
+                if (target.getAttribute('contextmenuButton') === 'Close') {
+                    view.api.refresh();
+                    return;
+                }
+                if (target.getAttribute('contextmenuButton') === 'Rename') {
+                    var renameObj = view.rootElement.querySelector('[renameFileObject]');
+                    renameObj.style.left = '50%';
+                    renameObj.style.top = '50%';
+                    var input = renameObj.querySelector('input');
+
+                    renameObj.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter' && input.value !== '') {
+                            var controller = require('./controller');
+                            var id = modalSource.getAttribute('fileEntryId');
+                            id = parseInt(id);
+                            controller.rename(id, input.value);
+                        }
+                    });
+                    return;
+                }
+                if (target.getAttribute('contextmenuButton') === 'CreateFolder') {
+                    var controller = require('./controller');
+                    var id = modalSource.getAttribute('fileEntryId');
+                    id = parseInt(id);
+                    var node = controller.viewMap[id];
+                    
+                    if (!node.isDir) {
+                        view.api.refresh();
+                        return;
+                    }
+                    var renameObj = view.rootElement.querySelector('[renameFileObject]');
+                    renameObj.style.left = '50%';
+                    renameObj.style.top = '50%';
+                    var input = renameObj.querySelector('input');
+
+                    renameObj.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter' && input.value !== '') {
+                            var controller = require('./controller');
+                            var path = node.path + '\\' + input.value;
+                            controller.createFolder(path, function() {
+                                node.children = undefined;
+                                controller.expand(node.id, node.expanded);
+                                modalMode = false;
+                            });
+                        }
+                    });
+                    return;
+                }
+            }
+
             if (target.getAttribute('directoryExpandButton')) {
+                if (modalMode) {
+                    return;
+                }
                 var id = target.getAttribute('directoryExpandButton');
                 id = parseInt(id);
                 var controller = require('./controller');
@@ -14,7 +72,23 @@ var view = {
             }
         },
         contextMenu: function(e) {
-            console.log('Context menu!');
+            var target = e.target;
+            if (target.getAttribute('fileEntryId')) {
+                var id = target.getAttribute('fileEntryId');
+                var coord = [e.offsetX, e.offsetY];
+                var cur = target;
+                while (cur.parentElement !== view.rootElement) {
+                    coord[0] += cur.offsetLeft;
+                    coord[1] += cur.offsetTop;
+                    cur = cur.parentElement;
+                }
+                var contextMenu = view.rootElement.querySelector('[contextMenuProject]');
+                
+                contextMenu.style.left = coord[0] + 'px';
+                contextMenu.style.top = coord[1] + 'px';
+                modalMode = true;
+                modalSource = target;
+            }
         },
         refresh: function() {
             while (view.rootElement.firstChild) {

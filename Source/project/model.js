@@ -36,7 +36,7 @@ var model = {
                         }
                         --open;
                         if (open === 0) {
-                            model.flushAssetsMap(assetsMapFile);
+                            model.flushAssetsMap();
                             postInit();
                         }
                     });
@@ -45,7 +45,7 @@ var model = {
                 }
 
                 if (open === 0) {
-                    model.flushAssetsMap(assetsMapFile);
+                    model.flushAssetsMap();
                     postInit();
                 }
             }
@@ -55,26 +55,39 @@ var model = {
             postInit();
         }
     },
-    flushAssetsMap: function(file) {
+    flushAssetsMap: function() {
+        var assetsMapFile = model.projectRoot + '\\assetsMap.json';
+
         var fs = require('fs');
-        fs.writeFile(file, JSON.stringify(model.assetsMap), function(err, info) {
+        fs.writeFile(assetsMapFile, JSON.stringify(model.assetsMap), function(err, info) {
             console.log(err, info);
         });
     },
     tree: {
         path: undefined,
     },
-    createFile: function(path, data, callbask) {
+    createFile: function(path, data, callback) {
         var fs = require('fs');
         fs.writeFile(path, data, function(err) {
             if (err) {
                 console.log(err);
             }
             model.flushAssetsMap(model.projectRoot + '\\assetsMap.json');
-            var view = require('./view');
-            callbask();
+            callback();
         });
         model.assetsMap.assets[path] = model.assetsMap.idCount++;
+    },
+    createFolder: function(path, callback) {
+        var fs = require('fs');
+        if (fs.existsSync(path)) {
+            callback();
+            return;
+        }
+        fs.mkdir(path, function() {
+            model.assetsMap.assets[path] = model.assetsMap.idCount++;
+            model.flushAssetsMap();
+            callback();
+        });
     },
     assetsMap: {},
 };
