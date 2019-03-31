@@ -58,6 +58,35 @@ var view = {
                     });
                     return;
                 }
+
+                if (target.getAttribute('contextmenuButton') === 'CreateFile') {
+                    var controller = require('./controller');
+                    var id = modalSource.getAttribute('fileEntryId');
+                    id = parseInt(id);
+                    var node = controller.viewMap[id];
+                    
+                    if (!node.isDir) {
+                        view.api.refresh();
+                        return;
+                    }
+                    var renameObj = view.rootElement.querySelector('[renameFileObject]');
+                    renameObj.style.left = '50%';
+                    renameObj.style.top = '50%';
+                    var input = renameObj.querySelector('input');
+
+                    renameObj.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter' && input.value !== '') {
+                            var controller = require('./controller');
+                            var path = node.path + '\\' + input.value;
+                            controller.createFile(path, function() {
+                                node.children = undefined;
+                                controller.expand(node.id, node.expanded);
+                                modalMode = false;
+                            });
+                        }
+                    });
+                    return;
+                }
             }
 
             if (target.getAttribute('directoryExpandButton')) {

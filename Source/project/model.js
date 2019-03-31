@@ -72,7 +72,7 @@ var model = {
             if (err) {
                 console.log(err);
             }
-            model.flushAssetsMap(model.projectRoot + '\\assetsMap.json');
+            model.flushAssetsMap();
             callback();
         });
         model.assetsMap.assets[path] = model.assetsMap.idCount++;

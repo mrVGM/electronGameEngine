@@ -97,6 +97,16 @@ var controller = {
     createFolder: function(path, callback) {
         var model = require('./model');
         model.createFolder(path, callback);
+    },
+    createFile: function(path, callback) {
+        var fs = require('fs');
+        if (fs.existsSync(path)) {
+            callback();
+            return;
+        }
+
+        var model = require('./model');
+        model.createFile(path, '', callback);
     }
 };
 
