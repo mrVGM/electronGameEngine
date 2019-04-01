@@ -107,6 +107,15 @@ var controller = {
 
         var model = require('./model');
         model.createFile(path, '', callback);
+    },
+    delete: function(id, cb) {
+        var node = controller.viewMap[id];
+        var model = require('./model');
+        model.delete(node.path, function() { 
+            node.parent.children = undefined;
+            controller.expand(node.parent.id, node.parent.expanded);
+            cb();
+        });
     }
 };
 

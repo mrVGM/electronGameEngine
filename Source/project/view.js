@@ -87,6 +87,19 @@ var view = {
                     });
                     return;
                 }
+
+                if (target.getAttribute('contextmenuButton') === 'Delete') {
+                    var controller = require('./controller');
+                    var id = modalSource.getAttribute('fileEntryId');
+                    id = parseInt(id);
+                    controller.delete(id, function() {
+                        console.log('!DONE!');
+                        view.api.refresh();
+                        modalMode = false;
+                    });
+                    
+                    return;
+                }
             }
 
             if (target.getAttribute('directoryExpandButton')) {

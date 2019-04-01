@@ -89,6 +89,50 @@ var model = {
             callback();
         });
     },
+    delete: function(path, cb) {
+        var fs = require('fs');
+        var toDel = [];
+        var open = 0;
+        function del(path, callback) {
+            console.log(path);
+            ++open;
+            toDel.push(path);
+            if (!fs.lstatSync(path).isDirectory()) {
+                delete model.assetsMap.assets[path];
+                --open;
+                if (open === 0) {
+                    callback();
+                }
+                return;
+            }
+            fs.readdir(path, function(err, data) {
+                console.log(data);
+
+                for (var i = 0; i < data.length; ++i) {
+                    var cur = path + '\\' + data[i];
+                    del(cur, callback);
+                }
+                --open;
+                if (open === 0) {
+                    callback();
+                }
+            });
+        }
+        
+        del(path, function() {
+            for (var i = toDel.length - 1; i >= 0; --i) {
+                if (!fs.lstatSync(toDel[i]).isDirectory()) {
+                    fs.unlinkSync(toDel[i]);
+                }
+                else {
+                    fs.rmdirSync(toDel[i]);
+                }
+                delete model.assetsMap.assets[toDel[i]];
+            }
+            model.flushAssetsMap();
+            cb();
+        });
+    },
     assetsMap: {},
 };
 
