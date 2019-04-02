@@ -14,6 +14,12 @@ module.exports = {
             init: function(parent) {
                 require('./hierarchy/view').init(parent);
             }
+        },
+        {
+            type: 'Inspector',
+            init: function(parent) {
+                require('./inspector/view').init(parent);
+            }
         }
     ]
 }

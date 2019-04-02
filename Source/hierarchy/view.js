@@ -63,6 +63,17 @@ module.exports = {
                     controller.toggleGameObject(id);
                     return;
                 }
+
+                if (target.getAttribute('gameObject')) {
+                    var id = target.getAttribute('gameObject');
+                    id = parseInt(id);
+                    var common = require('../common');
+                    common.selectedEntity = {
+                        type: 'gameObject',
+                        id: id
+                    };
+                    return;
+                }
             });
             
             hierarchyRoot.addEventListener('mousedown', function(e) {
