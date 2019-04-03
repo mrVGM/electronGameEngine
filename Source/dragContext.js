@@ -4,6 +4,8 @@ var dragContext = {
         type: undefined,
     },
     mouseUp: function(e) {
+        console.log('dwgerg', e.target);
+
         var target = e.target;
         if (target.getAttribute('filetype') === 'dir') {
             if (this.ctx.type === 'gameObject') {
@@ -18,6 +20,14 @@ var dragContext = {
                 controller.createPrefab(this.ctx.data, node.path, function() {
                     controller.expand(node.id, node.expanded);
                 });
+            }
+        }
+        else if (target.getAttribute('componentScript')) {
+            console.log('ggthrt');
+            if (this.ctx.type === 'file') {
+                var name = this.ctx.data.path.split('\\');
+                name = name[name.length - 1];
+                target.innerText = name;
             }
         }
         this.ctx.data = undefined;

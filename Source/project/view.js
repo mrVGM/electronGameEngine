@@ -132,6 +132,20 @@ var view = {
                 modalSource = target;
             }
         },
+        mousedown: function(e) {
+            var target = e.target;
+            if (e.button !== 0) {
+                return;
+            }
+            if (target.getAttribute('fileEntryId')) {
+                var dragContext = require('../dragContext');
+                dragContext.ctx.type = 'file';
+                var controller = require('./controller');
+                var id = target.getAttribute('fileEntryId');
+                id = parseInt(id);
+                dragContext.ctx.data = controller.viewMap[id];
+            }
+        },
         refresh: function() {
             while (view.rootElement.firstChild) {
                 view.rootElement.removeChild(view.rootElement.firstChild);
@@ -150,6 +164,7 @@ var view = {
         this.rootElement = parent;
         this.rootElement.addEventListener('click', this.api.clickEvent);
         this.rootElement.addEventListener('contextmenu', this.api.contextMenu);
+        this.rootElement.addEventListener('mousedown', view.api.mousedown);
         var viewFiles = ['main.ejs', 'fileEntry.ejs'];
 
         var fs = require('fs');
