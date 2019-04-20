@@ -1,3 +1,28 @@
-module.exports = function(element) {
-    var c = require('./container').create(element, true);
+var exp = {
+    parent: undefined,
+    refresh: function () {
+        while (this.parent.firstChild) {
+            this.parent.removeChild(this.parent.firstChild);
+        }
+
+        var controller = require('./Layout/controller');
+        controller.render(function (html) {
+            exp.parent.innerHTML = html;
+        });
+    },
+    init: function (par) {
+        this.parent = par;
+
+        var controller = require('./Layout/controller');
+        controller.init();
+        this.refresh();
+
+        var events = require('./events');
+        this.parent.addEventListener('mousedown', events.handleEvent);
+        this.parent.addEventListener('mouseup', events.handleEvent);
+        this.parent.addEventListener('mousemove', events.handleEvent);
+        this.parent.addEventListener('click', events.handleEvent);
+    }
 }
+
+module.exports = exp;

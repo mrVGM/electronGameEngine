@@ -5,7 +5,7 @@
     <link rel="stylesheet" type="text/css" href="main.css">
 </head>
 <body>
-    <div id="root", class="full-size"></div>
+    <div id="root" class="full-size anchor-element"></div>
 
     <script>
         var appRoot = document.getElementById('root');
@@ -14,13 +14,8 @@
                 location.reload();
             }
         });
-
-        appRoot.addEventListener('mouseup', function(e) {
-            var dragContext = require('./dragContext');
-            dragContext.mouseUp(e);
-        });
-
-        require('./init')(appRoot);
+        var init = require('./init');
+        init.init(appRoot);
     </script>
 </body>
 </html>

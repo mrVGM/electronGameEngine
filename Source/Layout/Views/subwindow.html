@@ -1,0 +1,24 @@
+<div class="positionable" style="width: <%= 100 * subwindow.dim.width %>%; height: <%= 100 * subwindow.dim.height %>%; left: <%= 100 * subwindow.dim.left %>%; top: <%= 100 * subwindow.dim.top %>%;" subwindow="<%= subwindow.id %>">
+    <% if (subwindow.children.length === 0) { %>
+        <div>
+            <span split-down-subwindow-button="<%= subwindow.id %>">SplitDown</span>
+            <span split-right-subwindow-button="<%= subwindow.id %>">SplitRight</span>
+        </div>
+    <% } else { %>
+        <% for (var i = 0; i < subwindow.children.length; ++i) { %>
+            <%- subwindow.children[i].renderSync() %>
+            <% if (i < subwindow.children.length - 1) { %>
+                <% var next = subwindow.children[i+1]; %>
+                <% if (subwindow.layout === 'horizontal') { %>
+                    <div class="positionable" style="left: <%= 100 * next.dim.left %>%; top: 0%; height: 100%;">
+                        <div class="positionable separator" style="left: -2px; top: 0px; width: 4px; height: 100%" horizontal-separator-between="<%= subwindow.children[i].id %>,<%= subwindow.children[i+1].id %>"></div>
+                    </div>
+                <% } else { %>
+                    <div class="positionable" style="left: 0%; top: <%= 100 * next.dim.top %>%; width:100%;">
+                        <div class="positionable separator" style="left: 0px; top: -2px; width: 100%; height: 4px" vertical-separator-between="<%= subwindow.children[i].id %>,<%= subwindow.children[i+1].id %>"></div>
+                    </div>
+                <% } %>
+            <% } %>
+        <% } %>
+    <% } %>
+</div>
