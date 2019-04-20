@@ -18,6 +18,27 @@ html, body {
     height: 100%;
 }
 
+.arrow-icon {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background-image: url("Assets/Icons/DownArrow.png");
+    background-repeat: no-repeat;
+    background-size: 10px 10px;
+    top: 5px;
+}
+
+.arrow-icon-rotated {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background-image: url("Assets/Icons/DownArrow.png");
+    transform: rotate(-90deg);
+    background-repeat: no-repeat;
+    background-size: 10px 10px;
+    top: 5px;
+}
+
 .separator {
     background-color: rgba(100,100,100,255);
     user-select: none;

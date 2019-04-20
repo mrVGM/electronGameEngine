@@ -1,8 +1,13 @@
 <div class="positionable" style="width: <%= 100 * subwindow.dim.width %>%; height: <%= 100 * subwindow.dim.height %>%; left: <%= 100 * subwindow.dim.left %>%; top: <%= 100 * subwindow.dim.top %>%;" subwindow="<%= subwindow.id %>">
     <% if (subwindow.children.length === 0) { %>
-        <div>
-            <span split-down-subwindow-button="<%= subwindow.id %>">SplitDown</span>
-            <span split-right-subwindow-button="<%= subwindow.id %>">SplitRight</span>
+        <div class="anchor-element" style="left: 2px; width: 0%;">
+            <div class="arrow-icon" split-down-subwindow-button="<%= subwindow.id %>"></div>
+            <div class="arrow-icon-rotated" style="left: 10px" split-right-subwindow-button="<%= subwindow.id %>"></div>
+            <div class="positionable" style="left: 25px">
+                <div class="positionable" style="left: 0px;">Hierarchy</div>
+                <div class="positionable" style="left: 70px;">Project</div>
+                <div class="positionable" style="left: 120px;">Inspector</div>
+            </div>
         </div>
     <% } else { %>
         <% for (var i = 0; i < subwindow.children.length; ++i) { %>
