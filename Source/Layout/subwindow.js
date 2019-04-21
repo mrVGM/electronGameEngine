@@ -64,6 +64,15 @@ var subWindow = {
                     left.parent = sw;
                     right.parent = sw;
 
+                    left.windowType = sw.windowType;
+                    left.contentController = sw.contentController;
+                    if (left.contentController) {
+                        left.contentController.subwindowId = left.id;
+                    }
+
+                    sw.windowType = undefined;
+                    sw.contentController = undefined;
+
                     sw.children = [left, right];
                     return [left, right];
                 }
@@ -87,6 +96,15 @@ var subWindow = {
 
                     up.parent = sw;
                     down.parent = sw;
+
+                    up.windowType = sw.windowType;
+                    up.contentController = sw.contentController;
+                    if (up.contentController) {
+                        up.contentController.subwindowId = up.id;
+                    }
+
+                    sw.windowType = undefined;
+                    sw.contentController = undefined;
 
                     sw.children = [up, down];
                     return [up, down];

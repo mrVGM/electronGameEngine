@@ -22,6 +22,16 @@ var controller = {
 
                 var wnd = rootElement.querySelector('[subwindow="' + ctrl.subwindowId + '"]');
 
+                var windowTypes = wnd.querySelectorAll('[window-type]');
+                for (var i = 0; i < windowTypes.length; ++i) {
+                    var cur = windowTypes[i];
+                    cur.className = "positionable unselectable";
+                    if (cur.getAttribute('window-type') === 'hierarchy') {
+                        cur.className += ' selected';
+                    }
+                }
+
+
                 wnd = wnd.querySelector('[subwindow-content]');
 
                 while (wnd.firstChild) {
