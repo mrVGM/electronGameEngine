@@ -8,6 +8,7 @@ var gameObject = {
     create: function () {
         var gm = {
             id: gameObject.idCount++,
+            name: 'Root gtredg',
             children: [],
             render: function(callback) {
                 if (!views) {

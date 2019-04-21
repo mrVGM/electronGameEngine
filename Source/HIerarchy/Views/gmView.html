@@ -1,3 +1,11 @@
-<div gameO-object="<%= gm.id %>">
-    Game Object
+<div class="anchor-element unselectable" game-object="<%= gm.id %>" style="left: 20px; top: 10px; width: 0%;">
+    <div>
+        <% var offset = '0px'; %>
+        <% if (gm.children.length > 0) { %>
+            <div class="expand-button" game-object-expand-button="<%= gm.id %>"></div>
+            <% offset = '13px' %>
+        <% } %>
+        <div class="anchor-element" style="left: <%= offset %>; width: 200px" game-object-entry="<%= gm.id %>"><%= gm.name %></div>
+    </div>
+    <div class="positionable" style="left: 0%; top: 0%" context-menu-place="<%= gm.id %>"></div>
 </div>

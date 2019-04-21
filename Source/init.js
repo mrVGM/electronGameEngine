@@ -29,6 +29,7 @@ var exp = {
         this.parent.addEventListener('mouseup', events.handleEvent);
         this.parent.addEventListener('mousemove', events.handleEvent);
         this.parent.addEventListener('click', events.handleEvent);
+        this.parent.addEventListener('contextmenu', events.handleEvent);
     }
 }
 

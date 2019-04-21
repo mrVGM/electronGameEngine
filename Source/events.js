@@ -3,7 +3,8 @@ var events = {
         mouseDown: [],
         mouseUp: [],
         mouseMove: [],
-        mouseClick: []
+        mouseClick: [],
+        contextMenu: [],
     },
     handleEvent(e) {
         if (e.type === 'mousemove') {
@@ -37,6 +38,16 @@ var events = {
         if (e.type === 'click') {
             for (var i = 0; i < events.eventHandlers.mouseClick.length; ++i) {
                 var cur = events.eventHandlers.mouseClick[i];
+                if (cur(e)) {
+                    return;
+                }
+            }
+            return;
+        }
+
+        if (e.type === 'contextmenu') {
+            for (var i = 0; i < events.eventHandlers.contextMenu.length; ++i) {
+                var cur = events.eventHandlers.contextMenu[i];
                 if (cur(e)) {
                     return;
                 }

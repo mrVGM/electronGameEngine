@@ -1,12 +1,120 @@
+var views = undefined;
+var viewDir = __dirname + '\\Views\\';
+var contextMenuView = 'contextMenu.html';
+var viewFilenames = [contextMenuView];
+
 var controller = {
+    events: {
+        setup: false,
+        contextMenuPlace: undefined,
+        closeCM: function () {
+            if (!controller.events.contextMenuPlace) {
+                return;
+            }
+
+            while (controller.events.contextMenuPlace.firstChild) {
+                controller.events.contextMenuPlace.removeChild(controller.events.contextMenuPlace.firstChild);
+            }
+            controller.events.contextMenuPlace.style.left = '0%';
+            controller.events.contextMenuPlace.style.top = '0%';
+            controller.events.contextMenuPlace = undefined;
+
+            var eventHandlers = require('../events');
+            var index = eventHandlers.eventHandlers.mouseClick.indexOf(controller.events.closeContextMenu);
+            if (index >= 0) {
+                eventHandlers.eventHandlers.mouseClick.splice(index, 1);
+            }
+            controller.events.closeContextMenu = undefined;
+        },
+        closeContextMenu: undefined,
+        contextMenu: function (e) {
+            var target = e.target;
+            var gme = target.getAttribute('game-object-entry');
+            if (!gme) {
+                return false;
+            }
+            if (!views) {
+                return false;
+            }
+
+            controller.events.closeCM();
+
+            var ejs = require('ejs');
+
+            var goEl = target;
+            while (!goEl.getAttribute('game-object')) {
+                goEl = goEl.parentElement;
+            }
+
+            var contextMenuPlace = goEl.querySelector('[context-menu-place]');
+            controller.events.contextMenuPlace = contextMenuPlace;
+            while (contextMenuPlace.firstChild) {
+                contextMenuPlace.removeChild(contextMenuPlace.firstChild);
+            }
+
+            var goId = parseInt(gme);
+            var go = controller.viewToGameObjectsMap[goId];
+
+            contextMenuPlace.innerHTML = ejs.render(views[contextMenuView], { gm: go });
+
+            contextMenuPlace.style.left = e.offsetX + 'px';
+            contextMenuPlace.style.top = e.offsetY + 'px';
+
+            var eventHandlers = require('../events');
+            if (!controller.events.closeContextMenu) {
+                controller.events.closeContextMenu = function (e) {
+                    var target = e.target;
+                    if (!target.getAttribute('hierarchy-context-menu')) {
+                        controller.events.closeCM();
+                        return true;
+                    }
+                    return false;
+                };
+            }
+            eventHandlers.eventHandlers.mouseClick.unshift(controller.events.closeContextMenu)
+        },
+        create: function (e) {
+            var target = e.target;
+            if (target.getAttribute('hierarchy-context-menu') === 'Create') {
+                var id = target.getAttribute('id');
+                id = parseInt(id);
+                var go = controller.viewToGameObjectsMap[id];
+                var gameObject = require('./gameObject');
+                go.children.push(gameObject.create());
+                controller.events.closeCM();
+                controller.refresh();
+            }
+        },
+    },
+    viewToGameObjectsMap: {},
+    refresh: function () {
+        var init = require('../init');
+        var parent = init.parent;
+        var sws = parent.querySelectorAll('[subwindow]');
+
+        var subwindow = require('../Layout//controller');
+        for (var i = 0; i < sws.length; ++i) {
+            var cur = sws[i];
+            var id = cur.getAttribute('subwindow');
+            id = parseInt(id);
+            var sw = subwindow.viewToModelMap[id];
+            if (sw.windowType === 'hierarchy') {
+                sw.contentController.render();
+            }
+        }
+    },
     create: function () {
+        var utils = require('../utils');
+        utils.readFiles(viewDir, viewFilenames, function (res) {
+            views = res;
+        });
+
         var ctrl = {
-            viewToGameObjectsMap: {},
             subwindowId: undefined,
             createGameObject: function () {
                 var gameObject = require('./gameObject');
                 var gm = gameObject.create();
-                ctrl.viewToGameObjectsMap[gm.id] = gm;
+                controller.viewToGameObjectsMap[gm.id] = gm;
                 return gm;
             },
             init: function () {
@@ -15,6 +123,14 @@ var controller = {
                     var rootObject = ctrl.createGameObject();
                     model.root = rootObject;
                 }
+                if (controller.events.setup) {
+                    return;
+                }
+
+                var eventHandlers = require('../events');
+                eventHandlers.eventHandlers.contextMenu.push(controller.events.contextMenu);
+                eventHandlers.eventHandlers.mouseClick.push(controller.events.create);
+                controller.events.setup = true;
             },
             render: function () {
                 var init = require('../init');
