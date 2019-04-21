@@ -7,5 +7,8 @@
         <% } %>
         <div class="anchor-element" style="left: <%= offset %>; width: 200px" game-object-entry="<%= gm.id %>"><%= gm.name %></div>
     </div>
+    <% if (gm.children.length > 0 && ctrl.isExpanded(gm.id)) { %>
+        <div>Children Area</div>
+    <% } %>
     <div class="positionable" style="left: 0%; top: 0%" context-menu-place="<%= gm.id %>"></div>
 </div>

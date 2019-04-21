@@ -10,18 +10,18 @@ var gameObject = {
             id: gameObject.idCount++,
             name: 'Root gtredg',
             children: [],
-            render: function(callback) {
+            render: function(controller, callback) {
                 if (!views) {
                     views = {};
                     var utils = require('../utils');
                     utils.readFiles(viewsDir, viewNames, function (res) {
                         views = res;
-                        gm.render(callback);
+                        gm.render(controller, callback);
                     });
                     return;
                 }
                 var ejs = require('ejs');
-                var res = ejs.render(views[gmView], { gm: gm });
+                var res = ejs.render(views[gmView], { ctrl: controller, gm: gm });
                 callback(res);
             }
         };

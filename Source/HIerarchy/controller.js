@@ -111,6 +111,14 @@ var controller = {
 
         var ctrl = {
             subwindowId: undefined,
+            expandedMap: {},
+            isExpanded: function (id) {
+                if(ctrl.expandedMap[id]) {
+                    return true;
+                }
+                ctrl.expandedMap[id] = false;
+                return false;
+            },
             createGameObject: function () {
                 var gameObject = require('./gameObject');
                 var gm = gameObject.create();
@@ -156,7 +164,7 @@ var controller = {
 
                 var model = require('./model');
 
-                model.root.render(function (html) {
+                model.root.render(ctrl, function (html) {
                     wnd.innerHTML = html;
                 });
             }
