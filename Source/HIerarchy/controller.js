@@ -1,7 +1,8 @@
 var views = undefined;
 var viewDir = __dirname + '\\Views\\';
 var contextMenuView = 'contextMenu.html';
-var viewFilenames = [contextMenuView];
+var renameView = 'renameView.html';
+var viewFilenames = [contextMenuView, renameView];
 
 var controller = {
     events: {
@@ -137,7 +138,47 @@ var controller = {
                 return true;
             }
             return false;
-        }
+        },
+        rename: function (e) {
+            var target = e.target;
+            if (target.getAttribute('hierarchy-context-menu') === 'Rename') {
+                var sw = target;
+                while (!sw.getAttribute('subwindow')) {
+                    sw = sw.parentElement;
+                }
+                var swId = sw.getAttribute('subwindow');
+                swId = parseInt(swId);
+                var sws = require('../Layout/controller');
+                sw = sws.viewToModelMap[swId];
+
+                var id = target.getAttribute('id');
+                id = parseInt(id);
+                var go = controller.viewToGameObjectsMap[id];
+
+                while (!target.getAttribute('game-object-entry')) {
+                    target = target.parentElement;
+                }
+
+                while (target.firstChild) {
+                    target.removeChild(target.firstChild);
+                }
+
+                var ejs = require('ejs');
+                target.innerHTML = ejs.render(views[renameView], { go: go });
+
+                var renameInput = target.querySelector('[rename-game-object]');
+                renameInput.value = go.name;
+                renameInput.addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter' && renameInput.value !== '') {
+                        go.name = renameInput.value;
+                        controller.refresh();
+                    }
+                });
+
+                return true;
+            }
+            return false;
+        },
     },
     viewToGameObjectsMap: {},
     refresh: function () {
@@ -204,6 +245,7 @@ var controller = {
                 eventHandlers.eventHandlers.mouseClick.push(controller.events.create);
                 eventHandlers.eventHandlers.mouseClick.push(controller.events.expand);
                 eventHandlers.eventHandlers.mouseClick.push(controller.events.delete);
+                eventHandlers.eventHandlers.mouseClick.push(controller.events.rename);
                 controller.events.setup = true;
             },
             render: function () {

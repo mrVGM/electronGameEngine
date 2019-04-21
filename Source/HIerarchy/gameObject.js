@@ -8,7 +8,7 @@ var gameObject = {
     create: function () {
         var gm = {
             id: gameObject.idCount++,
-            name: 'Root gtredg',
+            name: 'GameObject',
             parent: undefined,
             children: [],
             render: function(controller, callback) {
