@@ -51,9 +51,6 @@ var controller = {
 
             var goId = parseInt(gme);
 
-            console.log(goId);
-            console.log(controller);
-
             var go = controller.viewToGameObjectsMap[goId];
 
             contextMenuPlace.innerHTML = ejs.render(views[contextMenuView], { gm: go });
@@ -90,7 +87,9 @@ var controller = {
                 var id = target.getAttribute('id');
                 id = parseInt(id);
                 var go = controller.viewToGameObjectsMap[id];
-                go.children.push(sw.contentController.createGameObject());
+                var newGO = sw.contentController.createGameObject();
+                go.children.push(newGO);
+                newGO.parent = go;
                 controller.events.closeCM();
                 controller.refresh();
                 return true;
@@ -116,6 +115,28 @@ var controller = {
             sw.contentController.expandedMap[go] = !sw.contentController.expandedMap[go];
             controller.refresh();
             return true;
+        },
+        delete: function (e) {
+            var target = e.target;
+            if (target.getAttribute('hierarchy-context-menu') === 'Delete') {
+                var sw = target;
+                while (!sw.getAttribute('subwindow')) {
+                    sw = sw.parentElement;
+                }
+                var swId = sw.getAttribute('subwindow');
+                swId = parseInt(swId);
+                var sws = require('../Layout/controller');
+                sw = sws.viewToModelMap[swId];
+
+                var id = target.getAttribute('id');
+                id = parseInt(id);
+                var go = controller.viewToGameObjectsMap[id];
+                sw.contentController.deleteGameObject(go);
+                controller.events.closeCM();
+                controller.refresh();
+                return true;
+            }
+            return false;
         }
     },
     viewToGameObjectsMap: {},
@@ -157,6 +178,17 @@ var controller = {
                 controller.viewToGameObjectsMap[gm.id] = gm;
                 return gm;
             },
+            deleteGameObject: function (go) {
+                if (!go.parent) {
+                    return;
+                }
+
+                var parent = go.parent;
+                var index = parent.children.indexOf(go);
+                parent.children.splice(index, 1);
+
+                controller.viewToGameObjectsMap[go.id] = undefined;
+            },
             init: function () {
                 var model = require('./model');
                 if (!model.root) {
@@ -171,6 +203,7 @@ var controller = {
                 eventHandlers.eventHandlers.contextMenu.push(controller.events.contextMenu);
                 eventHandlers.eventHandlers.mouseClick.push(controller.events.create);
                 eventHandlers.eventHandlers.mouseClick.push(controller.events.expand);
+                eventHandlers.eventHandlers.mouseClick.push(controller.events.delete);
                 controller.events.setup = true;
             },
             render: function () {

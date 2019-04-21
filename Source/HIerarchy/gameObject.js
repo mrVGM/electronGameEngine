@@ -9,6 +9,7 @@ var gameObject = {
         var gm = {
             id: gameObject.idCount++,
             name: 'Root gtredg',
+            parent: undefined,
             children: [],
             render: function(controller, callback) {
                 if (!views) {
