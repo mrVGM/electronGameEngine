@@ -41,18 +41,19 @@ var controller = {
 
             var ejs = require('ejs');
 
-            var goEl = target;
-            while (!goEl.getAttribute('game-object')) {
-                goEl = goEl.parentElement;
-            }
-
-            var contextMenuPlace = goEl.querySelector('[context-menu-place]');
+            var contextMenuPlace = target.querySelector('[context-menu-place]');
             controller.events.contextMenuPlace = contextMenuPlace;
             while (contextMenuPlace.firstChild) {
                 contextMenuPlace.removeChild(contextMenuPlace.firstChild);
             }
 
+            console.log(contextMenuPlace);
+
             var goId = parseInt(gme);
+
+            console.log(goId);
+            console.log(controller);
+
             var go = controller.viewToGameObjectsMap[goId];
 
             contextMenuPlace.innerHTML = ejs.render(views[contextMenuView], { gm: go });
@@ -76,11 +77,20 @@ var controller = {
         create: function (e) {
             var target = e.target;
             if (target.getAttribute('hierarchy-context-menu') === 'Create') {
+
+                var sw = target;
+                while (!sw.getAttribute('subwindow')) {
+                    sw = sw.parentElement;
+                }
+                var swId = sw.getAttribute('subwindow');
+                swId = parseInt(swId);
+                var sws = require('../Layout/controller');
+                sw = sws.viewToModelMap[swId];
+
                 var id = target.getAttribute('id');
                 id = parseInt(id);
                 var go = controller.viewToGameObjectsMap[id];
-                var gameObject = require('./gameObject');
-                go.children.push(gameObject.create());
+                go.children.push(sw.contentController.createGameObject());
                 controller.events.closeCM();
                 controller.refresh();
                 return true;
@@ -190,6 +200,10 @@ var controller = {
                 model.root.render(ctrl, function (html) {
                     wnd.innerHTML = html;
                 });
+            },
+            getRoot: function () {
+                var model = require('./model');
+                return model.root;
             }
         };
         ctrl.init();

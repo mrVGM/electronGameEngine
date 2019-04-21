@@ -23,6 +23,11 @@ var gameObject = {
                 var ejs = require('ejs');
                 var res = ejs.render(views[gmView], { ctrl: controller, gm: gm });
                 callback(res);
+            },
+            renderSync(controller) {
+                var ejs = require('ejs');
+                var res = ejs.render(views[gmView], { ctrl: controller, gm: gm });
+                return res;
             }
         };
         return gm;
