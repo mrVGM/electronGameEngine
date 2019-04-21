@@ -11,6 +11,8 @@ var subWindow = {
             layout: undefined,
             children: [],
             parent: undefined,
+            windowType: undefined,
+            contentController: undefined,
             dim: {
                 left: 0,
                 top: 0,
@@ -27,7 +29,19 @@ var subWindow = {
                     return;
                 }
                 var ejs = require('ejs');
-                callback(ejs.render(views[subwindowView], { subwindow: sw }));
+                callback(ejs.render(views[subwindowView], { subwindow: sw }), function (elem) {
+                    var sws = elem.querySelectorAll('[subwindow]');
+                    var controller = require('./controller');
+                    for (var i = 0; i < sws.length; ++i) {
+                        var cur = sws[i];
+                        var id = cur.getAttribute('subwindow');
+                        id = parseInt(id);
+                        var sw = controller.viewToModelMap[id];
+                        if (sw.contentController) {
+                            sw.contentController.render();
+                        }
+                    }
+                });
             },
             renderSync: function () {
                 if (!views) {

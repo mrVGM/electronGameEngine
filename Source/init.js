@@ -6,11 +6,18 @@ var exp = {
         }
 
         var controller = require('./Layout/controller');
-        controller.render(function (html) {
+        controller.render(function (html, ready) {
             exp.parent.innerHTML = html;
+            ready(exp.parent);
         });
     },
     init: function (par) {
+        document.GUIAPI = {
+            onElementLoad: function (e) {
+                console.log("bgtb");
+            }
+        };
+
         this.parent = par;
 
         var controller = require('./Layout/controller');

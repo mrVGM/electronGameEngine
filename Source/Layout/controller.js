@@ -62,8 +62,6 @@ var controller = {
                 return false;
             }
 
-            console.log(e);
-
             var target = e.target;
 
             var horizontalSeparator = target.getAttribute('horizontal-separator-between');
@@ -144,6 +142,31 @@ var controller = {
 
                 events.eventHandlers.mouseUp.push(mouseUpHandler);
                 return true;
+            }
+        });
+
+        events.eventHandlers.mouseClick.push(function (e) {
+            if (e.button !== 0) {
+                return false;
+            }
+
+            var target = e.target;
+            if (target.getAttribute('window-type') === 'hierarchy') {
+                console.log('Open hierarchy');
+
+                var id = target.getAttribute('id');
+                id = parseInt(id);
+
+                var sw = controller.viewToModelMap[id];
+                if (sw.windowType === 'hierarchy') {
+                    return;
+                }
+
+                sw.windowType = 'hierarchy';
+                var hierarchyController = require('../HIerarchy/controller');
+                sw.contentController = hierarchyController.create();
+                sw.contentController.subwindowId = id;
+                sw.contentController.render();
             }
         });
     }

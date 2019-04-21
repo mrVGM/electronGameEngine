@@ -44,3 +44,11 @@ html, body {
     user-select: none;
     z-index: 10;
 }
+
+.unselectable {
+    user-select: none;
+}
+
+.selected {
+    background-color: rgb(0, 255, 255);
+}
