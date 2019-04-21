@@ -54,7 +54,7 @@ html, body {
     width: 10px;
     height: 10px;
     background-image: url("Assets/Icons/play-button.png");
-    transform: rotate(-90deg);
+    transform: rotate(90deg);
     background-repeat: no-repeat;
     background-size: 10px 10px;
     top: 5px;
