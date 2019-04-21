@@ -83,8 +83,30 @@ var controller = {
                 go.children.push(gameObject.create());
                 controller.events.closeCM();
                 controller.refresh();
+                return true;
             }
+            return false;
         },
+        expand: function (e) {
+            var target = e.target;
+            var go = target.getAttribute('game-object-expand-button');
+            if (!go) {
+                return false;
+            }
+            go = parseInt(go);
+
+            var goEl = target;
+            while (!goEl.getAttribute('subwindow')) {
+                goEl = goEl.parentElement;
+            }
+            var sw = goEl.getAttribute('subwindow');
+            sw = parseInt(sw);
+            var sws = require('../Layout/controller');
+            sw = sws.viewToModelMap[sw];
+            sw.contentController.expandedMap[go] = !sw.contentController.expandedMap[go];
+            controller.refresh();
+            return true;
+        }
     },
     viewToGameObjectsMap: {},
     refresh: function () {
@@ -138,6 +160,7 @@ var controller = {
                 var eventHandlers = require('../events');
                 eventHandlers.eventHandlers.contextMenu.push(controller.events.contextMenu);
                 eventHandlers.eventHandlers.mouseClick.push(controller.events.create);
+                eventHandlers.eventHandlers.mouseClick.push(controller.events.expand);
                 controller.events.setup = true;
             },
             render: function () {
