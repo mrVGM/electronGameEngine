@@ -159,14 +159,34 @@ var controller = {
 
                 var sw = controller.viewToModelMap[id];
                 if (sw.windowType === 'hierarchy') {
-                    return;
+                    return true;
                 }
 
                 sw.windowType = 'hierarchy';
-                var hierarchyController = require('../HIerarchy/controller');
-                sw.contentController = hierarchyController.create();
+                var projectController = require('../HIerarchy/controller');
+                sw.contentController = projectController.create();
                 sw.contentController.subwindowId = id;
                 sw.contentController.render();
+                return true;
+            }
+
+            if (target.getAttribute('window-type') === 'project') {
+                console.log('Open project');
+
+                var id = target.getAttribute('id');
+                id = parseInt(id);
+
+                var sw = controller.viewToModelMap[id];
+                if (sw.windowType === 'project') {
+                    return true;
+                }
+
+                sw.windowType = 'project';
+                var projectController = require('../Project/controller');
+                sw.contentController = projectController.create();
+                sw.contentController.subwindowId = id;
+                sw.contentController.render();
+                return true;
             }
         });
     }
