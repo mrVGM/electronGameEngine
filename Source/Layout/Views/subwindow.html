@@ -14,7 +14,7 @@
                 <div class="positionable unselectable" style="left: 120px;" window-type="inspector" id="<%= subwindow.id %>">Inspector</div>
             </div>
         </div>
-        <div class="anchor-element" subwindow-content="<%= subwindow.id %>"></div>
+        <div class="anchor-element" style="top: 10px;" subwindow-content="<%= subwindow.id %>"></div>
     <% } else { %>
         <% for (var i = 0; i < subwindow.children.length; ++i) { %>
             <%- subwindow.children[i].renderSync() %>

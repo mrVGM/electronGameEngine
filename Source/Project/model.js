@@ -27,7 +27,9 @@ var model = {
                 model.fileEntries = {};
                 var fileEntry = require('./fileEntry');
                 fileEntry.create(projectFolder + assetsFolder);
-                
+
+                console.log(model);
+
                 callback();
                 model.flush();
             }
@@ -36,6 +38,14 @@ var model = {
     flush: function () {
         var fs = require('fs');
         fs.writeFile(projectFolder + fileMap, JSON.stringify(model.fileEntries), function (err) { });
+    },
+    getId: function (path) {
+        for (var i in model.fileEntries) {
+            if (model.fileEntries[i].path === path) {
+                return i;
+            }
+        }
+        return undefined;
     },
     getProjectRoot: function () {
         if (!model.root) {
@@ -47,6 +57,9 @@ var model = {
             }
         }
         return model.root;
+    },
+    getProjectPath: function () {
+        return projectFolder + assetsFolder;
     }
 };
 
