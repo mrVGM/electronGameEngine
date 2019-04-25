@@ -4,8 +4,8 @@
         <div class="expand-button"></div>
         <% offset = '13px'; %>
     <% } %>
-    <div class="positionable" style="left: <%= offset %>; top: 0px;" file-entry="<%= fileEntry.id %>">
+    <div class="positionable unselectable" style="left: <%= offset %>; top: 0px;" file-entry="<%= fileEntry.id %>">
         <%= fileEntry.getName() %>
-        <div class="positionable" style="left: 0%; top: 0%" modal-place="<%= fileEntry.id %>"></div>
+        <div class="positionable" style="left: 0%; top: 0%" context-menu-place="<%= fileEntry.id %>"></div>
     </div>
 </div>
