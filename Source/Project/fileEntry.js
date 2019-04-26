@@ -34,6 +34,19 @@ var fileEntry = {
             return fe;
         }
 
+        var name = path.split('\\');
+        name = name[name.length - 1];
+        var parentFolder = path.substring(0, path.length - name.length - 1);
+        var parentFolderId = model.getId(parentFolder);
+        if (parentFolderId) {
+            var parentFolderFE = model.fileEntries[parentFolderId];
+            prot.parent = parentFolderId;
+            var fe = fileEntry.deserialize(prot);
+            parentFolderFE.children.push(fe.id);
+            model.fileEntries[fe.id] = fe;
+            return fe;
+        }
+
         path = path.substring(projectPath.length + 1);
         path = path.split('\\');
 
@@ -43,10 +56,8 @@ var fileEntry = {
         while (index < path.length) {
             var dir = model.getId(curPath);
             dir = model.fileEntries[dir];
-            curPath = '\\' + path[index++];
+            curPath += '\\' + path[index++];
             newFile = fileEntry.create(curPath);
-            newFile.parent = dir.id;
-            dir.children.push(newFile.id);
         }
 
         return newFile;

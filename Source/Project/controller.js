@@ -7,6 +7,7 @@ var viewsDir = __dirname + '\\Views\\';
 var controller = {
     events: {
         registered: false,
+        cancelContextMenu: undefined,
         rename: function (e) {
             if (e.button !== 0) {
                 return false;
@@ -65,10 +66,65 @@ var controller = {
 
             return true;
         },
+        create: function (e) {
+            if (e.button !== 0) {
+                return false;
+            }
+
+            var target = e.target;
+            var menuItem = target.getAttribute('project-context-menu');
+            if (menuItem !== 'Create') {
+                return false;
+            }
+
+            controller.events.clearContextMenuEvents();
+
+            var id = target.getAttribute('id');
+            id = parseInt(id);
+
+            var model = require('./model');
+            var fileEntry = model.fileEntries[id];
+
+            var fs = require('fs');
+            var newPath = fileEntry.path + '\\NewFile';
+            if (fs.existsSync(newPath)) {
+                var index = 0;
+
+                while (fs.existsSync(newPath + index)) {
+                    ++index;
+                }
+                newPath += index;
+            }
+
+            fs.writeFile(newPath, '', function () {
+                var fe = require('./fileEntry');
+                fe.create(newPath);
+                model.flush();
+
+                var elem = target;
+                while (!elem.getAttribute('subwindow')) {
+                    elem = elem.parentElement;
+                }
+                var swId = elem.getAttribute('subwindow');
+                swId = parseInt(swId);
+                var swcontroller = require('../Layout/controller');
+                var sw = swcontroller.viewToModelMap[swId];
+                sw.contentController.render();
+            });
+
+            return true;
+        },
         clearContextMenuEvents: function () {
             var events = require('../events');
-            var index = events.eventHandlers.mouseClick.indexOf(controller.events.rename);
+            var index = events.eventHandlers.mouseClick.indexOf(controller.events.cancelContextMenu);
             events.eventHandlers.mouseClick.splice(index, 1);
+            controller.events.cancelContextMenu = undefined;
+
+            index = events.eventHandlers.mouseClick.indexOf(controller.events.rename);
+            events.eventHandlers.mouseClick.splice(index, 1);
+            index = events.eventHandlers.mouseClick.indexOf(controller.events.create);
+            events.eventHandlers.mouseClick.splice(index, 1);
+
         },
         onContextMenu: function (e) {
             var target = e.target;
@@ -90,7 +146,7 @@ var controller = {
             contextPlace.style.top = e.offsetY + 'px';
 
             var events = require('../events');
-            var clearContextMenu = function (e) {
+            controller.events.cancelContextMenu = function (e) {
                 console.log(e);
                 if (e.button !== 0) {
                     return false;
@@ -103,8 +159,6 @@ var controller = {
                 while (contextPlace.firstChild) {
                     contextPlace.removeChild(contextPlace.firstChild);
                 }
-                var index = events.eventHandlers.mouseClick.indexOf(clearContextMenu);
-                events.eventHandlers.mouseClick.splice(index, 1);
 
                 controller.events.clearContextMenuEvents();
 
@@ -112,8 +166,9 @@ var controller = {
             }
 
             events.eventHandlers.mouseClick.push(controller.events.rename);
+            events.eventHandlers.mouseClick.push(controller.events.create);
 
-            events.eventHandlers.mouseClick.unshift(clearContextMenu);
+            events.eventHandlers.mouseClick.unshift(controller.events.cancelContextMenu);
 
             return true;
         },
