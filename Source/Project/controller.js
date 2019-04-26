@@ -1,11 +1,75 @@
 var views = undefined;
 var contextMenuView = 'contextMenu.html';
-var viewsFiles = [contextMenuView];
+var renameInput = 'renameView.html';
+var viewsFiles = [contextMenuView, renameInput];
 var viewsDir = __dirname + '\\Views\\';
 
 var controller = {
     events: {
         registered: false,
+        rename: function (e) {
+            if (e.button !== 0) {
+                return false;
+            }
+
+            var target = e.target;
+            var menuItem = target.getAttribute('project-context-menu');
+            if (menuItem !== 'Rename') {
+                return false;
+            }
+
+            var id = target.getAttribute('id');
+            id = parseInt(id);
+
+            var model = require('./model');
+            var fileEntry = model.fileEntries[id];
+
+            var elem = target;
+            while (!elem.getAttribute('file-entry')) {
+                elem = elem.parentElement;
+            }
+
+            while (elem.firstChild) {
+                elem.removeChild(elem.firstChild);
+            }
+
+            var ejs = require('ejs');
+            var html = ejs.render(views[renameInput], { fileEntry: fileEntry });
+
+            elem.innerHTML = html;
+
+            controller.events.clearContextMenuEvents();
+
+            var input = elem.querySelector('[rename-file-object]');
+            input.value = fileEntry.getName();
+            input.addEventListener('keypress', function (e) {
+
+                if (e.key !== 'Enter')
+                    return;
+
+                var target = e.target;
+
+                var subwindow = target;
+                while (!subwindow.getAttribute('subwindow')) {
+                    subwindow = subwindow.parentElement;
+                }
+
+                var subwindowId = subwindow.getAttribute('subwindow');
+                subwindowId = parseInt(subwindowId);
+
+                var sws = require('../Layout/controller');
+                var sw = sws.viewToModelMap[subwindowId];
+                var contentController = sw.contentController;
+                contentController.render();
+            });
+
+            return true;
+        },
+        clearContextMenuEvents: function () {
+            var events = require('../events');
+            var index = events.eventHandlers.mouseClick.indexOf(controller.events.rename);
+            events.eventHandlers.mouseClick.splice(index, 1);
+        },
         onContextMenu: function (e) {
             var target = e.target;
             var fileEntry = target.getAttribute('file-entry');
@@ -41,8 +105,13 @@ var controller = {
                 }
                 var index = events.eventHandlers.mouseClick.indexOf(clearContextMenu);
                 events.eventHandlers.mouseClick.splice(index, 1);
+
+                controller.events.clearContextMenuEvents();
+
                 return true;
             }
+
+            events.eventHandlers.mouseClick.push(controller.events.rename);
 
             events.eventHandlers.mouseClick.unshift(clearContextMenu);
 
