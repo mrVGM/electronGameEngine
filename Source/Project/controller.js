@@ -45,23 +45,39 @@ var controller = {
             input.value = fileEntry.getName();
             input.addEventListener('keypress', function (e) {
 
-                if (e.key !== 'Enter')
+                if (e.key !== 'Enter' || input.value === '')
                     return;
 
                 var target = e.target;
 
-                var subwindow = target;
-                while (!subwindow.getAttribute('subwindow')) {
-                    subwindow = subwindow.parentElement;
-                }
+                var id = target.getAttribute('rename-file-object');
+                id = parseInt(id);
 
-                var subwindowId = subwindow.getAttribute('subwindow');
-                subwindowId = parseInt(subwindowId);
+                var model = require('./model');
+                var fe = model.fileEntries[id];
 
-                var sws = require('../Layout/controller');
-                var sw = sws.viewToModelMap[subwindowId];
+                var utils = require('../utils');
+                var sw = utils.findSubWindow(target);
                 var contentController = sw.contentController;
-                contentController.render();
+
+                var dir = model.fileEntries[fe.parent];
+
+                var fs = require('fs');
+                var newPath = dir.path + '\\' + input.value;
+
+                fs.exists(newPath, function (res) { 
+                    if (!res) {
+                        fs.rename(fe.path, newPath, function (err) {
+                            if (!err) {
+                                fe.path = newPath;
+                                model.flush();
+                            }
+                            contentController.render();
+                        });
+                    } else {
+                        contentController.render();
+                    }
+                });
             });
 
             return true;
