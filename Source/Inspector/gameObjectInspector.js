@@ -18,8 +18,12 @@ var inspector = {
                     return;
                 }
                 var ejs = require('ejs');
-                var html = ejs.render(views[frameView], {});
+                var html = ejs.render(views[frameView], { insp: insp });
                 callback(html);
+            },
+            renderComponent: function (component) {
+                var ejs = require('ejs');
+                return ejs.render(views[componentView], { component: component });
             }
         };
         return insp;

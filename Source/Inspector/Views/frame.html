@@ -1,1 +1,12 @@
-<div>Inspector</div>
+<% if (insp.selected) { %>
+    <div class="anchor-element unselectable" style="left: 15px; width:0%;">
+        <% for (var i = 0; i < insp.selected.components.length; ++i) { %>
+            <%- insp.renderComponent(insp.selected.components[i]) %>
+        <% } %>
+        <div style="width: 200px">
+            <div style="border-width: 2px;" add-script-place="<%= insp.selected.id %>">+ Script</div>
+        </div>
+    </div>
+<% } else { %>
+    <div class="unselectable" style="position:relative; left: 20px; width: 50%;">Nothing selected...</div>
+<% } %>

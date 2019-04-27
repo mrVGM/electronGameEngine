@@ -11,6 +11,7 @@ var gameObject = {
             name: 'GameObject',
             parent: undefined,
             children: [],
+            components: [],
             render: function(controller, callback) {
                 if (!views) {
                     views = {};

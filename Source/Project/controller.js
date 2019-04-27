@@ -354,8 +354,6 @@ var controller = {
                 return false;
             }
 
-            console.log(e);
-
             id = parseInt(id);
 
             var sw = target;
@@ -371,6 +369,41 @@ var controller = {
             sw.contentController.expanded[id] = !expanded;
             sw.contentController.render();
         },
+        dragToComponent: function (e) {
+            if (e.button !== 0) {
+                return false;
+            }
+            var target = e.target;
+            var fileId = target.getAttribute('file-entry');
+            if (!fileId) {
+                return false;
+            }
+
+            fileId = parseInt(fileId);
+
+            var events = require('../events');
+
+            var drop = function (e) {
+                var index = events.eventHandlers.mouseUp.indexOf(drop);
+                events.eventHandlers.mouseUp.splice(index, 1);
+
+                var target = e.target;
+                if (!target.getAttribute('add-script-place')) {
+                    return true;
+                }
+
+                var utils = require('../utils');
+                var sw = utils.findSubWindow(target);
+                var contentController = sw.contentController;
+                contentController.currentInspector.selected.components.push({ script: fileId });
+                contentController.render();
+                return true;
+            }
+            
+            events.eventHandlers.mouseUp.unshift(drop);
+
+            return true;
+        },
         registerEvents: function () {
             if (controller.events.registered) {
                 return;
@@ -379,6 +412,7 @@ var controller = {
             var events = require('../events');
             events.eventHandlers.contextMenu.push(controller.events.onContextMenu);
             events.eventHandlers.mouseClick.push(controller.events.expandFolder);
+            events.eventHandlers.mouseDown.push(controller.events.dragToComponent);
         }
     },
     create: function () {
