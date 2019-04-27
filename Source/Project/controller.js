@@ -85,6 +85,17 @@ var controller = {
             var model = require('./model');
             var fileEntry = model.fileEntries[id];
 
+            if (!fileEntry.isFolder()) {
+                var el = target;
+                while (!el.getAttribute('context-menu-place')) {
+                    el = el.parentElement;
+                }
+                while (el.firstChild) {
+                    el.removeChild(el.firstChild);
+                }
+                return true;
+            }
+
             var fs = require('fs');
             var newPath = fileEntry.path + '\\NewFile';
             if (fs.existsSync(newPath)) {
@@ -133,6 +144,17 @@ var controller = {
             var model = require('./model');
             var fileEntry = model.fileEntries[id];
 
+            if (!fileEntry.isFolder()) {
+                var el = target;
+                while (!el.getAttribute('context-menu-place')) {
+                    el = el.parentElement;
+                }
+                while (el.firstChild) {
+                    el.removeChild(el.firstChild);
+                }
+                return true;
+            }
+
             var fs = require('fs');
             var newPath = fileEntry.path + '\\NewFolder';
             if (fs.existsSync(newPath)) {
@@ -162,6 +184,69 @@ var controller = {
 
             return true;
         },
+        delete: function (e) {
+            if (e.button !== 0) {
+                return false;
+            }
+
+            var target = e.target;
+            var menuItem = target.getAttribute('project-context-menu');
+            if (menuItem !== 'Delete') {
+                return false;
+            }
+
+            console.log('delete', e);
+
+            controller.events.clearContextMenuEvents();
+
+            var id = target.getAttribute('id');
+            id = parseInt(id);
+
+            var model = require('./model');
+            var fileEntry = model.fileEntries[id];
+
+            if (model.getProjectPath() === fileEntry.path) {
+
+                console.log('fgrhrthtrhy');
+
+                var el = target;
+                while (!el.getAttribute('context-menu-place')) {
+                    el = el.parentElement;
+                }
+                while (el.firstChild) {
+                    el.removeChild(el.firstChild);
+                }
+                return true;
+            }
+
+            function remove(fe, flush) {
+                var model = require('./model');
+
+                if (fe.children) {
+                    for (var i = 0; i < fe.children.length; ++i) {
+                        remove(model.fileEntries[fe.children[i]], false);
+                    }
+                }
+
+                var parent = model.fileEntries[fe.parent];
+                var index = parent.children.indexOf(fe.id);
+                parent.children.splice(index, 1);
+                
+                delete model.fileEntries[fe.id];
+                if (flush) {
+                    model.flush();
+                }
+            }
+
+            remove(fileEntry, true);
+
+            var utils = require('../utils');
+            var sw = utils.findSubWindow(target);
+
+            sw.contentController.render();
+            console.log('hbtrhrh');
+            return true;
+        },
         clearContextMenuEvents: function () {
             var events = require('../events');
             var index = events.eventHandlers.mouseClick.indexOf(controller.events.cancelContextMenu);
@@ -172,7 +257,10 @@ var controller = {
             events.eventHandlers.mouseClick.splice(index, 1);
             index = events.eventHandlers.mouseClick.indexOf(controller.events.create);
             events.eventHandlers.mouseClick.splice(index, 1);
-
+            index = events.eventHandlers.mouseClick.indexOf(controller.events.createFolder);
+            events.eventHandlers.mouseClick.splice(index, 1);
+            index = events.eventHandlers.mouseClick.indexOf(controller.events.delete);
+            events.eventHandlers.mouseClick.splice(index, 1);
         },
         onContextMenu: function (e) {
             var target = e.target;
@@ -215,6 +303,8 @@ var controller = {
 
             events.eventHandlers.mouseClick.push(controller.events.rename);
             events.eventHandlers.mouseClick.push(controller.events.create);
+            events.eventHandlers.mouseClick.push(controller.events.createFolder);
+            events.eventHandlers.mouseClick.push(controller.events.delete);
 
             events.eventHandlers.mouseClick.unshift(controller.events.cancelContextMenu);
 
@@ -255,7 +345,6 @@ var controller = {
             var events = require('../events');
             events.eventHandlers.contextMenu.push(controller.events.onContextMenu);
             events.eventHandlers.mouseClick.push(controller.events.expandFolder);
-            events.eventHandlers.mouseClick.push(controller.events.createFolder);
         }
     },
     create: function () {

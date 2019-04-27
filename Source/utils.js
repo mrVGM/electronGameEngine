@@ -20,6 +20,18 @@ var utils = {
         }
 
         read();
+    },
+    findSubWindow: function (elem) {
+        console.log(elem);
+        var sw = elem;
+        while (!sw.getAttribute('subwindow')) {
+            sw = sw.parentElement;
+        }
+        sw = sw.getAttribute('subwindow');
+        sw = parseInt(sw);
+        var swController = require('./Layout/controller');
+        sw = swController.viewToModelMap[sw];
+        return sw;
     }
 };
 
