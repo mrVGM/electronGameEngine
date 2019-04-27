@@ -218,6 +218,7 @@ var controller = {
                 }
                 return true;
             }
+            var files = [];
 
             function remove(fe, flush) {
                 var model = require('./model');
@@ -233,6 +234,8 @@ var controller = {
                 parent.children.splice(index, 1);
                 
                 delete model.fileEntries[fe.id];
+                files.push(fe.path);
+
                 if (flush) {
                     model.flush();
                 }
@@ -241,10 +244,12 @@ var controller = {
             remove(fileEntry, true);
 
             var utils = require('../utils');
+
+            utils.removeFiles(files);
+
             var sw = utils.findSubWindow(target);
 
             sw.contentController.render();
-            console.log('hbtrhrh');
             return true;
         },
         clearContextMenuEvents: function () {

@@ -32,6 +32,31 @@ var utils = {
         var swController = require('./Layout/controller');
         sw = swController.viewToModelMap[sw];
         return sw;
+    },
+    removeFiles: function (files, callback) {
+        index = 0;
+        function remove() {
+            if (index == files.length) {
+                if (callback) {
+                    callback();
+                }
+                return;
+            }
+            var fs = require('fs');
+
+            if (fs.lstatSync(files[index]).isDirectory()) {
+                fs.rmdir(files[index], function () {
+                    ++index;
+                    remove();
+                });
+            } else {
+                fs.unlink(files[index], function () {
+                    index++;
+                    remove();
+                });
+            }
+        }
+        remove();
     }
 };
 
