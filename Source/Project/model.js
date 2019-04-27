@@ -20,8 +20,8 @@ var model = {
                     model.fileEntries = JSON.parse(data.toString());
                     var fileEntry = require('./fileEntry');
                     for (var i in model.fileEntries) {
-                        if (model.fileEntries.idCount < i) {
-                            model.fileEntries.idCount = i;
+                        if (model.idCount < i) {
+                            model.idCount = i;
                         }
                         model.fileEntries[i] = fileEntry.deserialize(model.fileEntries[i]);
                     }
