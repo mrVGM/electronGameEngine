@@ -70,6 +70,19 @@ var controller = {
                         fs.rename(fe.path, newPath, function (err) {
                             if (!err) {
                                 fe.path = newPath;
+
+                                function repairPaths(fileEntry) {
+                                    fileEntry.path = model.fileEntries[fileEntry.parent].path + '\\' + fileEntry.getName();
+                                    if (!fileEntry.children) {
+                                        return;
+                                    }
+                                    for (var i = 0; i < fileEntry.children.length; ++i) {
+                                        repairPaths(model.fileEntries[fileEntry.children[i]]);
+                                    }
+                                }
+
+                                repairPaths(fe);
+
                                 model.flush();
                             }
                             contentController.render();
