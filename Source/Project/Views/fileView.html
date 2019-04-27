@@ -1,11 +1,25 @@
-<div class="anchor-element" style="left: 20px; width: 0%; height: 0%">
-    <% var offset = '0px'; %>
-    <% if (fileEntry.isFolder()) { %>
-        <div class="expand-button"></div>
-        <% offset = '13px'; %>
-    <% } %>
-    <div class="positionable unselectable" style="left: <%= offset %>; top: 0px;" file-entry="<%= fileEntry.id %>">
-        <%= fileEntry.getName() %>
-        <div class="positionable" style="left: 0%; top: 0%" context-menu-place="<%= fileEntry.id %>"></div>
+<div class="anchor-element unselectable" style="left: 20px; width: 0%;">
+    <div style="position: relative">
+        <% var offset = '0px'; %>
+        <% if (fileEntry.isFolder() > 0) { %>
+            <% var ebStyle = 'expand-button'; %>
+            <% if (ctrl.isExpanded(fileEntry.id)) { %>
+                <% ebStyle = 'expand-button-rotated'; %>
+            <% } %>
+            <div class="<%= ebStyle %>" file-entry-expand-button="<%= fileEntry.id %>"></div>
+            <% offset = '13px' %>
+        <% } %>
+        <div class="anchor-element" style="left: <%= offset %>; width: 200px" file-entry="<%= fileEntry.id %>">
+            <%= fileEntry.getName() %>
+            <div class="positionable" style="left: 0%; top: 0%" context-menu-place="<%= fileEntry.id %>"></div>
+        </div>
     </div>
+    <% if (fileEntry.children && fileEntry.children.length > 0 && ctrl.isExpanded(fileEntry.id)) { %>
+    <div style="position: relative; left: 20px">
+        <% for (var i = 0; i < fileEntry.children.length; ++i) { %>
+            <% var child = ctrl.getFileEntryById(fileEntry.children[i]); %>
+            <%- child.renderSync(ctrl); %>
+        <% } %>
+    </div>
+    <% } %>
 </div>

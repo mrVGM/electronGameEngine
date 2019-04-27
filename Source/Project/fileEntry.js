@@ -76,22 +76,22 @@ var fileEntry = {
                 var fs = require('fs');
                 return fs.lstatSync(fe.path).isDirectory();
             },
-            render: function (callback) {
+            render: function (callback, controller) {
                 if (!views) {
                     var utils = require('../utils');
                     utils.readFiles(viewFolder, viewFiles, function (res) {
                         views = res;
-                        fe.render(callback);
+                        fe.render(callback, controller);
                     });
                     return;
                 }
 
                 var ejs = require('ejs');
-                callback(ejs.render(views[fileView], { fileEntry: fe }));
+                callback(ejs.render(views[fileView], { fileEntry: fe, ctrl: controller }));
             },
-            renderSync: function () {
+            renderSync: function (controller) {
                 var ejs = require('ejs');
-                return ejs.render(views[fileView], { fileEntry: fe });
+                return ejs.render(views[fileView], { fileEntry: fe, ctrl: controller });
             },
         };
         return fe;

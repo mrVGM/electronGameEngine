@@ -172,6 +172,33 @@ var controller = {
 
             return true;
         },
+        expandFolder: function (e) {
+            if (e.button !== 0) {
+                return false;
+            }
+            var target = e.target;
+            var id = target.getAttribute('file-entry-expand-button');
+            if (!id) {
+                return false;
+            }
+
+            console.log(e);
+
+            id = parseInt(id);
+
+            var sw = target;
+            while (!sw.getAttribute('subwindow')) {
+                sw = sw.parentElement;
+            }
+            sw = sw.getAttribute('subwindow');
+            sw = parseInt(sw);
+            var sws = require('../Layout/controller');
+            sw = sws.viewToModelMap[sw];
+
+            var expanded = sw.contentController.expanded[id];
+            sw.contentController.expanded[id] = !expanded;
+            sw.contentController.render();
+        },
         registerEvents: function () {
             if (controller.events.registered) {
                 return;
@@ -179,6 +206,7 @@ var controller = {
             controller.events.registered = true;
             var events = require('../events');
             events.eventHandlers.contextMenu.push(controller.events.onContextMenu);
+            events.eventHandlers.mouseClick.push(controller.events.expandFolder);
         }
     },
     create: function () {
@@ -192,6 +220,7 @@ var controller = {
         controller.events.registerEvents();
 
         var ctrl = {
+            expanded: {},
             render: function () {
                 var init = require('../init');
                 var rootElement = init.parent;
@@ -218,8 +247,15 @@ var controller = {
                     var root = model.getProjectRoot();
                     root.render(function (html) {
                         wnd.innerHTML = html;
-                    });
+                    }, ctrl);
                 });
+            },
+            getFileEntryById: function (id) {
+                var model = require('./model');
+                return model.fileEntries[id];
+            },
+            isExpanded: function (fileEntryId) {
+                return ctrl.expanded[fileEntryId];
             }
         };
         return ctrl;
