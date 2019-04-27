@@ -6,8 +6,14 @@ var model = {
     idCount: 0,
     fileEntries: undefined,
     root: undefined,
+    inited: false,
     init: function (callback) {
+        if (model.inited) {
+            callback();
+            return;
+        }
         var fs = require('fs');
+        model.inited = true;
         fs.exists(projectFolder + fileMap, function (res) {
             if (res) {
                 fs.readFile(projectFolder + fileMap, function (err, data) {
