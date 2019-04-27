@@ -114,6 +114,54 @@ var controller = {
 
             return true;
         },
+        createFolder: function (e) {
+            if (e.button !== 0) {
+                return false;
+            }
+
+            var target = e.target;
+            var menuItem = target.getAttribute('project-context-menu');
+            if (menuItem !== 'CreateFolder') {
+                return false;
+            }
+
+            controller.events.clearContextMenuEvents();
+
+            var id = target.getAttribute('id');
+            id = parseInt(id);
+
+            var model = require('./model');
+            var fileEntry = model.fileEntries[id];
+
+            var fs = require('fs');
+            var newPath = fileEntry.path + '\\NewFolder';
+            if (fs.existsSync(newPath)) {
+                var index = 0;
+
+                while (fs.existsSync(newPath + index)) {
+                    ++index;
+                }
+                newPath += index;
+            }
+
+            fs.mkdir(newPath, function () {
+                var fe = require('./fileEntry');
+                fe.create(newPath);
+                model.flush();
+
+                var elem = target;
+                while (!elem.getAttribute('subwindow')) {
+                    elem = elem.parentElement;
+                }
+                var swId = elem.getAttribute('subwindow');
+                swId = parseInt(swId);
+                var swcontroller = require('../Layout/controller');
+                var sw = swcontroller.viewToModelMap[swId];
+                sw.contentController.render();
+            });
+
+            return true;
+        },
         clearContextMenuEvents: function () {
             var events = require('../events');
             var index = events.eventHandlers.mouseClick.indexOf(controller.events.cancelContextMenu);
@@ -207,6 +255,7 @@ var controller = {
             var events = require('../events');
             events.eventHandlers.contextMenu.push(controller.events.onContextMenu);
             events.eventHandlers.mouseClick.push(controller.events.expandFolder);
+            events.eventHandlers.mouseClick.push(controller.events.createFolder);
         }
     },
     create: function () {
