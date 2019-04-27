@@ -188,6 +188,26 @@ var controller = {
                 sw.contentController.render();
                 return true;
             }
+
+            if (target.getAttribute('window-type') === 'inspector') {
+                console.log('Open inspector');
+
+                var id = target.getAttribute('id');
+                id = parseInt(id);
+
+                var sw = controller.viewToModelMap[id];
+                if (sw.windowType === 'inspector') {
+                    return true;
+                }
+
+                sw.windowType = 'inspector';
+                var inspectorController = require('../Inspector/controller');
+                sw.contentController = inspectorController.create();
+                sw.contentController.subwindowId = id;
+                sw.contentController.render();
+                return true;
+            }
+
         });
     }
 };
