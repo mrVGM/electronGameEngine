@@ -1,1 +1,8 @@
-<div>Component</div>
+<div class="anchor-element">
+    <div><%= component.instance.name %></div>
+    <div style="position: relative; left: 5px;">
+        <% for (var param in component.instance.params) { %>
+            <%- paramsAPI.render(component.instance.params[param]) %>
+        <% } %>
+    </div>
+</div>

@@ -235,9 +235,6 @@ var controller = {
             var fileEntry = model.fileEntries[id];
 
             if (model.getProjectPath() === fileEntry.path) {
-
-                console.log('fgrhrthtrhy');
-
                 var el = target;
                 while (!el.getAttribute('context-menu-place')) {
                     el = el.parentElement;
@@ -395,7 +392,14 @@ var controller = {
                 var utils = require('../utils');
                 var sw = utils.findSubWindow(target);
                 var contentController = sw.contentController;
-                contentController.currentInspector.selected.components.push({ script: fileId });
+
+                var model = require('./model');
+                var fileEntry = model.fileEntries[fileId];
+                var script = require(fileEntry.path);
+
+                var paramsAPI = require('../API/params');
+
+                contentController.currentInspector.selected.components.push({ script: fileId, instance: script.createInstance(), paramsAPI: paramsAPI });
                 contentController.render();
                 return true;
             }

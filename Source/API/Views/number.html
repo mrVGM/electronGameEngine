@@ -1,0 +1,8 @@
+<div class="anchor-element">
+    <% var inputOffset = '0px;' %>
+    <% if (param.name) { %>
+        <label style="white-space: nowrap"><%= param.name %>:</label>
+        <% inputOffset = '5px;' %>
+    <% } %>
+    <input style="position:relative; left: <%= inputOffset %>" type="text" value="<%= param.value %>"/>
+</div>

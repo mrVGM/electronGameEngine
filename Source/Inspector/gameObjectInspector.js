@@ -8,23 +8,31 @@ var inspector = {
     create: function (selected) {
         var insp = {
             selected: selected,
-            render: function (callback, controller) {
+            init: function (callback) {
                 if (!views) {
                     var utils = require('../utils');
                     utils.readFiles(viewsDir, viewsFilenames, function (res) {
                         views = res;
-                        insp.render(callback, controller);
+                        insp.init(callback);
                     });
                     return;
                 }
-                var ejs = require('ejs');
-                var html = ejs.render(views[frameView], { insp: insp });
-                callback(html);
+                var params = require('../API/params');
+                params.init(callback);
+            },
+            render: function (callback, controller) {
+                function rend() {
+                    var ejs = require('ejs');
+                    var html = ejs.render(views[frameView], { insp: insp });
+                    callback(html);
+                }
+                insp.init(rend);
             },
             renderComponent: function (component) {
+                var paramsAPI = require('../API/params');
                 var ejs = require('ejs');
-                return ejs.render(views[componentView], { component: component });
-            }
+                return ejs.render(views[componentView], { component: component, paramsAPI: paramsAPI });
+            },
         };
         return insp;
     }
