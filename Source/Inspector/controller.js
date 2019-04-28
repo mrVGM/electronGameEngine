@@ -69,6 +69,20 @@ var controller = {
                 }
                 ctrl.currentInspector.render(function (html) {
                     wnd.innerHTML = html;
+
+                    var inspectorWindow = wnd.querySelector('[inspector-window]');
+                    if (!inspectorWindow) {
+                        return;
+                    }
+
+                    inspectorWindow.addEventListener('change', function (e) {
+                        var target = e.target;
+                        if (!target.getAttribute('component-param-path')) {
+                            return;
+                        }
+                        var params = require('../API/params');
+                        params.syncValue(target);
+                    });
                 });
             },
         };

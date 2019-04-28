@@ -1,7 +1,7 @@
 <% if (insp.selected) { %>
-    <div class="anchor-element unselectable" style="left: 15px; width:0%;">
+    <div class="anchor-element unselectable" style="left: 15px; width:0%;" inspector-window="">
         <% for (var i = 0; i < insp.selected.components.length; ++i) { %>
-            <%- insp.renderComponent(insp.selected.components[i]) %>
+            <%- insp.renderComponent(i) %>
         <% } %>
         <div style="width: 200px">
             <div add-script-place="<%= insp.selected.id %>">+ Script</div>

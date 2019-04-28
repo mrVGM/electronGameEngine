@@ -28,10 +28,10 @@ var inspector = {
                 }
                 insp.init(rend);
             },
-            renderComponent: function (component) {
+            renderComponent: function (componentIndex) {
                 var paramsAPI = require('../API/params');
                 var ejs = require('ejs');
-                return ejs.render(views[componentView], { component: component, paramsAPI: paramsAPI });
+                return ejs.render(views[componentView], { component: insp.selected.components[componentIndex], componentIndex: componentIndex, paramsAPI: paramsAPI });
             },
         };
         return insp;

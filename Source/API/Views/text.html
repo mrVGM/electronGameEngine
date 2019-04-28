@@ -4,5 +4,5 @@
         <label style="white-space: nowrap"><%= param.name %>:</label>
         <% inputOffset = '5px;' %>
     <% } %>
-    <input style="position:relative; left: <%= inputOffset %>" type="text" value="<%= param.value %>" />
+    <input style="position:relative; left: <%= inputOffset %>" type="text" value="<%= param.value %>" component-param-path="<%= paramPath %>" />
 </div>

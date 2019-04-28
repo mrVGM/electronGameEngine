@@ -17,32 +17,60 @@ var params = {
         }
         callback();
     },
-    render: function (param) {
+    render: function (param, paramID) {
         if (param.type === 'number') {
-            return params.renderNumber(param);
+            return params.renderNumber(param, paramID);
         }
         if (param.type === 'text') {
-            return params.renderText(param);
+            return params.renderText(param, paramID);
         }
         if (param.type === 'array') {
-            return params.renderArray(param);
+            return params.renderArray(param, paramID);
         }
         return 'Unknown parameter';
     },
-    renderNumber: function (param) {
+    renderNumber: function (param, paramID) {
         var ejs = require('ejs');
-        var html = ejs.render(views[numberView], { param: param });
+        var html = ejs.render(views[numberView], { param: param, paramPath: paramID });
         return html;
     },
-    renderText: function (param) {
+    renderText: function (param, paramID) {
         var ejs = require('ejs');
-        var html = ejs.render(views[textView], { param: param });
+        var html = ejs.render(views[textView], { param: param, paramPath: paramID });
         return html;
     },
-    renderArray: function (param) {
+    renderArray: function (param, paramID) {
         var ejs = require('ejs');
-        var html = ejs.render(views[arrayView], { param: param });
+        var html = ejs.render(views[arrayView], { param: param, paramPath: paramID });
         return html;
+    },
+    setParamValue: function (elem, param) {
+        if (param.type === 'number') {
+            var val = parseFloat(elem.value);
+            param.value = val;
+            return;
+        }
+        if (param.type === 'text') {
+            param.value = elem.value;
+            return;
+        }
+    },
+    syncValue: function (elem) {
+        var utils = require('../utils');
+        var sw = utils.findSubWindow(elem);
+        var contentController = sw.contentController;
+
+        var selected = contentController.currentInspector.selected;
+        var componentIndex = elem;
+        while (!componentIndex.getAttribute('component-index')) {
+            componentIndex = componentIndex.parentElement;
+        }
+        componentIndex = componentIndex.getAttribute('component-index');
+        componentIndex = parseInt(componentIndex);
+
+        var paramPath = elem.getAttribute('component-param-path');
+
+        params.setParamValue(elem, selected.components[componentIndex].instance.params[paramPath]);
     }
 };
 

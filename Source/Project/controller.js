@@ -397,9 +397,7 @@ var controller = {
                 var fileEntry = model.fileEntries[fileId];
                 var script = require(fileEntry.path);
 
-                var paramsAPI = require('../API/params');
-
-                contentController.currentInspector.selected.components.push({ script: fileId, instance: script.createInstance(), paramsAPI: paramsAPI });
+                contentController.currentInspector.selected.components.push({ script: fileId, instance: script.createInstance() });
                 contentController.render();
                 return true;
             }
