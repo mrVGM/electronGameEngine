@@ -54,6 +54,19 @@ var params = {
             param.value = elem.value;
             return;
         }
+        if (param.type === 'array') {
+            if (elem.getAttribute('array-length')) {
+                var len = parseInt(elem.value);
+                if (param.value.length > len) {
+                    param.value = param.value.slice(0, len);
+                    return;
+                }
+                while (param.value.length < len) {
+                    param.value.push(param.elementGenerator());
+                }
+                return;
+            }
+        }
     },
     syncValue: function (elem) {
         var utils = require('../utils');
@@ -71,6 +84,8 @@ var params = {
         var paramPath = elem.getAttribute('component-param-path');
 
         params.setParamValue(elem, selected.components[componentIndex].instance.params[paramPath]);
+
+        console.log(selected);
     }
 };
 
