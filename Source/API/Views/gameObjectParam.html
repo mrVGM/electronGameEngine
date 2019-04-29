@@ -1,0 +1,12 @@
+<div class="anchor-element">
+    <% var inputOffset = '0px;' %>
+    <% if (param.name) { %>
+        <label style="white-space: nowrap"><%= param.name %>:</label>
+        <% inputOffset = '5px;' %>
+    <% } %>
+    <% var val = ''; %>
+    <% if (settings.go) { %>
+        val = settings.go.name;
+    <% } %>
+    <input style="position:relative; left: <%= inputOffset %>" type="text" value="<%= val %>" component-param-path="<%= settings.paramPath %>" game-object-param="1" />
+</div>

@@ -3,7 +3,9 @@ var numberView = 'number.html';
 var textView = 'text.html';
 var arrayView = 'array.html';
 var customView = 'custom.html';
-var viewsFiles = [numberView, textView, arrayView, customView];
+var gameObjectParamView = 'gameObjectParam.html';
+var fileObjectParamView = 'fileObjectParam.html';
+var viewsFiles = [numberView, textView, arrayView, customView, gameObjectParamView, fileObjectParamView];
 var views = undefined;
 
 var params = {
@@ -31,6 +33,12 @@ var params = {
         if (param.type === 'custom') {
             return params.renderCustom(param, settings);
         }
+        if (param.type === 'gameObject') {
+            return params.renderGameObjectParam(param, settings);
+        }
+        if (param.type === 'fileObject') {
+            return params.renderFileObjectParam(param, settings);
+        }
         return 'Unknown parameter';
     },
     renderCustom: function (param, settings) {
@@ -51,6 +59,26 @@ var params = {
     renderArray: function (param, settings) {
         var ejs = require('ejs');
         var html = ejs.render(views[arrayView], { param: param, settings: { paramPath: settings.paramPath, paramsAPI: params }} );
+        return html;
+    },
+    renderGameObjectParam: function (param, settings) {
+        var go = undefined;
+        if (param.value) {
+            var hierarchyController = require('../HIerarchy/controller');
+            go = hierarchyController.viewToGameObjectsMap[param.value];
+        }
+        var ejs = require('ejs');
+        var html = ejs.render(views[gameObjectParamView], { param: param, settings: { paramPath: settings.paramPath, paramsAPI: params, go: go } });
+        return html;
+    },
+    renderFileObjectParam: function (param, settings) {
+        var fo = undefined;
+        if (param.value) {
+            var projectModel = require('../Project/model');
+            fo = projectModel.fileEntries[param.value];
+        }
+        var ejs = require('ejs');
+        var html = ejs.render(views[fileObjectParamView], { param: param, settings: { paramPath: settings.paramPath, paramsAPI: params, fo: fo } });
         return html;
     },
     setParamValue: function (elem, param) {
@@ -103,6 +131,18 @@ var params = {
                 params.setParamValue(elem, param.value[arrayIndex]);
                 return;
             }
+        }
+        if (param.type === 'gameObject') {
+            if (elem.value === '') {
+                param.value = undefined;
+            }
+            return;
+        }
+        if (param.type === 'fileObject') {
+            if (elem.value === '') {
+                param.value = undefined;
+            }
+            return;
         }
     },
     syncValue: function (elem) {
