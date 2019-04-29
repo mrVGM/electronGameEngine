@@ -66,6 +66,12 @@ var params = {
                 }
                 return;
             }
+            if (elem.getAttribute('array-index')) {
+                var arrayIndex = elem.getAttribute('array-index');
+                arrayIndex = parseInt(arrayIndex);
+                params.setParamValue(elem, param.value[arrayIndex]);
+                return;
+            }
         }
     },
     syncValue: function (elem) {
