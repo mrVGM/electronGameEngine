@@ -2,7 +2,8 @@ var viewsDir = __dirname + '\\Views\\';
 var numberView = 'number.html';
 var textView = 'text.html';
 var arrayView = 'array.html';
-var viewsFiles = [numberView, textView, arrayView];
+var customView = 'custom.html';
+var viewsFiles = [numberView, textView, arrayView, customView];
 var views = undefined;
 
 var params = {
@@ -27,7 +28,15 @@ var params = {
         if (param.type === 'array') {
             return params.renderArray(param, settings);
         }
+        if (param.type === 'custom') {
+            return params.renderCustom(param, settings);
+        }
         return 'Unknown parameter';
+    },
+    renderCustom: function (param, settings) {
+        var ejs = require('ejs');
+        var html = ejs.render(views[customView], { param: param, settings: { paramPath: settings.paramPath, paramsAPI: params } });
+        return html;
     },
     renderNumber: function (param, settings) {
         var ejs = require('ejs');
@@ -71,7 +80,17 @@ var params = {
                             };
                         }
 
+                        var res = {
+                            name: p.name,
+                            type: p.type,
+                            value: {}
+                        };
+                        for (var subParam in p.value) {
+                            res.value[subParam] = copyParam(p.value[subParam]);
+                        }
+                        return res;
                     }
+
                     var newElem = copyParam(param.defaultElement);
                     newElem.name = 'Element ' + param.value.length;
                     param.value.push(newElem);
@@ -100,8 +119,20 @@ var params = {
         componentIndex = parseInt(componentIndex);
 
         var paramPath = elem.getAttribute('component-param-path');
+        paramPath = paramPath.split('.');
 
-        params.setParamValue(elem, selected.components[componentIndex].instance.params[paramPath]);
+        var param = selected.components[componentIndex].instance.params[paramPath[0]];
+        for (var i = 1; i < paramPath.length; ++i) {
+            param = param.value;
+            var p = paramPath[i];
+            p = parseInt(p);
+            if (isNaN(p)) {
+                p = paramPath[i];
+            }
+            param = param[p];
+        }
+
+        params.setParamValue(elem, param);
 
         var utils = require('../utils');
         var sw = utils.findSubWindow(elem);

@@ -1,0 +1,8 @@
+<div class="anchor-element">
+    <label style="white-space: nowrap"><%= param.name %>:</label>
+    <div class="anchor-element" style="left: 5px;">
+        <% for (var subParam in param.value) { %>
+            <%- settings.paramsAPI.render(param.value[subParam], { paramPath: settings.paramPath + '.' + subParam }) %>
+        <% } %>
+    </div>
+</div>

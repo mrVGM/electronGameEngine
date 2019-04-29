@@ -8,7 +8,7 @@
         <% if (param.value.length > 0) { %>
             <div>
                 <% for (var i = 0; i < param.value.length; ++i) { %>
-                    <%- settings.paramsAPI.render(param.value[i], { paramPath: settings.paramPath, arrayIndex: i }) %>
+                    <%- settings.paramsAPI.render(param.value[i], { paramPath: settings.paramPath + '.' + i }) %>
                 <% } %>
             </div>
         <% } %>
