@@ -62,7 +62,19 @@ var params = {
                     return;
                 }
                 while (param.value.length < len) {
-                    param.value.push(param.elementGenerator());
+                    function copyParam(p) {
+                        if (p.type !== 'custom') {
+                            return {
+                                name: p.name,
+                                type: p.type,
+                                value: p.value
+                            };
+                        }
+
+                    }
+                    var newElem = copyParam(param.defaultElement);
+                    newElem.name = 'Element ' + param.value.length;
+                    param.value.push(newElem);
                 }
                 return;
             }
