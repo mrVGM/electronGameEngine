@@ -385,20 +385,31 @@ var controller = {
                 events.eventHandlers.mouseUp.splice(index, 1);
 
                 var target = e.target;
-                if (!target.getAttribute('add-script-place')) {
+                if (target.getAttribute('add-script-place')) {
+
+                    var utils = require('../utils');
+                    var sw = utils.findSubWindow(target);
+                    var contentController = sw.contentController;
+
+                    var model = require('./model');
+                    var fileEntry = model.fileEntries[fileId];
+                    var script = require(fileEntry.path);
+
+                    contentController.currentInspector.selected.components.push({ script: fileId, instance: script.createInstance() });
+                    contentController.render();
                     return true;
                 }
+                if (target.getAttribute('file-object-param')) {
+                    var params = require('../API/params');
+                    var param = params.findParam(target);
+                    param.value = fileId;
 
-                var utils = require('../utils');
-                var sw = utils.findSubWindow(target);
-                var contentController = sw.contentController;
-
-                var model = require('./model');
-                var fileEntry = model.fileEntries[fileId];
-                var script = require(fileEntry.path);
-
-                contentController.currentInspector.selected.components.push({ script: fileId, instance: script.createInstance() });
-                contentController.render();
+                    var utils = require('../utils');
+                    var sw = utils.findSubWindow(target);
+                    var contentController = sw.contentController;
+                    contentController.render();
+                    return true;
+                }
                 return true;
             }
             

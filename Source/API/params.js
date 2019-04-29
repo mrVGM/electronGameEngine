@@ -63,17 +63,18 @@ var params = {
     },
     renderGameObjectParam: function (param, settings) {
         var go = undefined;
-        if (param.value) {
+        if (typeof param.value !== 'undefined') {
             var hierarchyController = require('../HIerarchy/controller');
             go = hierarchyController.viewToGameObjectsMap[param.value];
         }
+
         var ejs = require('ejs');
         var html = ejs.render(views[gameObjectParamView], { param: param, settings: { paramPath: settings.paramPath, paramsAPI: params, go: go } });
         return html;
     },
     renderFileObjectParam: function (param, settings) {
         var fo = undefined;
-        if (param.value) {
+        if (typeof param.value !== 'undefined') {
             var projectModel = require('../Project/model');
             fo = projectModel.fileEntries[param.value];
         }
@@ -145,7 +146,7 @@ var params = {
             return;
         }
     },
-    syncValue: function (elem) {
+    findParam: function (elem) {
         var utils = require('../utils');
         var sw = utils.findSubWindow(elem);
         var contentController = sw.contentController;
@@ -171,6 +172,10 @@ var params = {
             }
             param = param[p];
         }
+        return param;
+    },
+    syncValue: function (elem) {
+        var param = params.findParam(elem);
 
         params.setParamValue(elem, param);
 

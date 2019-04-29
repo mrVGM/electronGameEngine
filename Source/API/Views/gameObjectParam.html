@@ -6,7 +6,7 @@
     <% } %>
     <% var val = ''; %>
     <% if (settings.go) { %>
-        val = settings.go.name;
+        <% val = settings.go.name; %>
     <% } %>
     <input style="position:relative; left: <%= inputOffset %>" type="text" value="<%= val %>" component-param-path="<%= settings.paramPath %>" game-object-param="1" />
 </div>

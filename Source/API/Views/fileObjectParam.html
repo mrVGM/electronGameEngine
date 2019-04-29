@@ -6,7 +6,7 @@
     <% } %>
     <% var val = ''; %>
     <% if (settings.fo) { %>
-        val = settings.fo.getName();
+        <% val = settings.fo.getName(); %>
     <% } %>
     <input style="position:relative; left: <%= inputOffset %>" type="text" value="<%= val %>" component-param-path="<%= settings.paramPath %>" file-object-param="1" />
 </div>

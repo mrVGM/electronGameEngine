@@ -139,6 +139,46 @@ var controller = {
             }
             return false;
         },
+        drag: function (e) {
+            if (e.button !== 0) {
+                return false;
+            }
+
+            var target = e.target;
+            var goID = target.getAttribute('game-object-entry');
+            if (!goID) {
+                return false;
+            }
+
+            goID = parseInt(goID);
+
+            var events = require('../events');
+
+            var drop = function (e) {
+                var index = events.eventHandlers.mouseUp.indexOf(drop);
+                events.eventHandlers.mouseUp.splice(index, 1);
+
+                var target = e.target;
+
+                if (target.getAttribute('game-object-param')) {
+                    var params = require('../API/params');
+                    var param = params.findParam(target);
+                    param.value = goID;
+
+                    var utils = require('../utils');
+                    var sw = utils.findSubWindow(target);
+                    var contentController = sw.contentController;
+                    contentController.render();
+
+                    return true;
+                }
+                return true;
+            }
+
+            events.eventHandlers.mouseUp.unshift(drop);
+
+            return true;
+        },
         rename: function (e) {
             var target = e.target;
             if (target.getAttribute('hierarchy-context-menu') === 'Rename') {
@@ -246,6 +286,7 @@ var controller = {
                 eventHandlers.eventHandlers.mouseClick.push(controller.events.expand);
                 eventHandlers.eventHandlers.mouseClick.push(controller.events.delete);
                 eventHandlers.eventHandlers.mouseClick.push(controller.events.rename);
+                eventHandlers.eventHandlers.mouseDown.push(controller.events.drag);
                 controller.events.setup = true;
             },
             render: function () {
