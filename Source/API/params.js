@@ -17,31 +17,31 @@ var params = {
         }
         callback();
     },
-    render: function (param, paramID) {
+    render: function (param, settings) {
         if (param.type === 'number') {
-            return params.renderNumber(param, paramID);
+            return params.renderNumber(param, settings);
         }
         if (param.type === 'text') {
-            return params.renderText(param, paramID);
+            return params.renderText(param, settings);
         }
         if (param.type === 'array') {
-            return params.renderArray(param, paramID);
+            return params.renderArray(param, settings);
         }
         return 'Unknown parameter';
     },
-    renderNumber: function (param, paramID) {
+    renderNumber: function (param, settings) {
         var ejs = require('ejs');
-        var html = ejs.render(views[numberView], { param: param, paramPath: paramID });
+        var html = ejs.render(views[numberView], { param: param, settings: settings });
         return html;
     },
-    renderText: function (param, paramID) {
+    renderText: function (param, settings) {
         var ejs = require('ejs');
-        var html = ejs.render(views[textView], { param: param, paramPath: paramID });
+        var html = ejs.render(views[textView], { param: param, settings: settings });
         return html;
     },
-    renderArray: function (param, paramID) {
+    renderArray: function (param, settings) {
         var ejs = require('ejs');
-        var html = ejs.render(views[arrayView], { param: param, paramPath: paramID });
+        var html = ejs.render(views[arrayView], { param: param, settings: { paramPath: settings.paramPath, paramsAPI: params }} );
         return html;
     },
     setParamValue: function (elem, param) {
@@ -85,7 +85,9 @@ var params = {
 
         params.setParamValue(elem, selected.components[componentIndex].instance.params[paramPath]);
 
-        console.log(selected);
+        var utils = require('../utils');
+        var sw = utils.findSubWindow(elem);
+        sw.contentController.render();
     }
 };
 

@@ -3,7 +3,14 @@
     <div class="anchor-element" style="left: 5px;">
         <div>Length: </div>
         <div class="positionable" style="left: 55px; top: 0px">
-            <input type="text" value="0" style="width: 30px;" component-param-path="<%= paramPath %>" array-length="1" />
+            <input type="text" value="<%= param.value.length %>" style="width: 30px;" component-param-path="<%= settings.paramPath %>" array-length="1" />
         </div>
+        <% if (param.value.length > 0) { %>
+            <div>
+                <% for (var i = 0; i < param.value.length; ++i) { %>
+                    <%- settings.paramsAPI.render(param.value[i], { paramPath: settings.paramPath, arrayIndex: i }) %>
+                <% } %>
+            </div>
+        <% } %>
     </div>
 </div>
