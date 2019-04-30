@@ -30,6 +30,21 @@ var gameObject = {
                 var ejs = require('ejs');
                 var res = ejs.render(views[gmView], { ctrl: controller, gm: gm });
                 return res;
+            },
+            serializable: function () {
+                function serialize(go) {
+                    var res = {
+                        id: go.id,
+                        name: go.name,
+                        children: [],
+                        components: go.components,
+                    };
+                    for (var i = 0; i < go.children.length; ++i) {
+                        res.children.push(serialize(go.children[i]));
+                    }
+                    return res;
+                }
+                return serialize(gm);
             }
         };
         return gm;

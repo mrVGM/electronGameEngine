@@ -172,6 +172,38 @@ var controller = {
 
                     return true;
                 }
+                if (target.getAttribute('file-entry')) {
+                    var fileID = target.getAttribute('file-entry');
+                    fileID = parseInt(fileID);
+                    var projectModel = require('../Project/model');
+                    var fe = projectModel.fileEntries[fileID];
+                    if (fe.isFolder()) {
+                        var prefabName = fe.path + '\\Prefab';
+                        var fs = require('fs');
+                        if (fs.existsSync(projectModel.getProjectFolder() + prefabName + '.prefab')) {
+                            var index = 0;
+                            while (fs.existsSync(projectModel.getProjectFolder() + prefabName + index + '.prefab')) {
+                                ++index;
+                            }
+                        }
+
+                        var go = controller.viewToGameObjectsMap[goID];
+
+                        console.log(go);
+
+                        fs.writeFile(projectModel.getProjectFolder() + prefabName + '.prefab', JSON.stringify(go.serializable()), function () {
+                            var fe = require('../Project/fileEntry');
+                            fe.create(prefabName + '.prefab');
+                            projectModel.flush();
+
+                            var utils = require('../utils');
+                            var sw = utils.findSubWindow(target);
+                            sw.contentController.render();
+                        });
+
+                    }
+                    return true;
+                }
                 return true;
             }
 
