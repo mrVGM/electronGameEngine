@@ -65,9 +65,9 @@ var controller = {
                 var fs = require('fs');
                 var newPath = dir.path + '\\' + input.value;
 
-                fs.exists(newPath, function (res) { 
+                fs.exists(model.getProjectFolder() + newPath, function (res) { 
                     if (!res) {
-                        fs.rename(fe.path, newPath, function (err) {
+                        fs.rename(model.getProjectFolder() + fe.path, model.getProjectFolder() + newPath, function (err) {
                             if (!err) {
                                 fe.path = newPath;
 
@@ -127,16 +127,16 @@ var controller = {
 
             var fs = require('fs');
             var newPath = fileEntry.path + '\\NewFile';
-            if (fs.existsSync(newPath)) {
+            if (fs.existsSync(model.getProjectFolder() + newPath)) {
                 var index = 0;
 
-                while (fs.existsSync(newPath + index)) {
+                while (fs.existsSync(model.getProjectFolder() + newPath + index)) {
                     ++index;
                 }
                 newPath += index;
             }
 
-            fs.writeFile(newPath, '', function () {
+            fs.writeFile(model.getProjectFolder() + newPath, '', function () {
                 var fe = require('./fileEntry');
                 fe.create(newPath);
                 model.flush();
@@ -186,16 +186,16 @@ var controller = {
 
             var fs = require('fs');
             var newPath = fileEntry.path + '\\NewFolder';
-            if (fs.existsSync(newPath)) {
+            if (fs.existsSync(model.getProjectFolder() + newPath)) {
                 var index = 0;
 
-                while (fs.existsSync(newPath + index)) {
+                while (fs.existsSync(model.getProjectFolder() + newPath + index)) {
                     ++index;
                 }
                 newPath += index;
             }
 
-            fs.mkdir(newPath, function () {
+            fs.mkdir(model.getProjectFolder() + newPath, function () {
                 var fe = require('./fileEntry');
                 fe.create(newPath);
                 model.flush();
@@ -234,7 +234,7 @@ var controller = {
             var model = require('./model');
             var fileEntry = model.fileEntries[id];
 
-            if (model.getProjectPath() === fileEntry.path) {
+            if (model.getAssetsFolder() === fileEntry.path) {
                 var el = target;
                 while (!el.getAttribute('context-menu-place')) {
                     el = el.parentElement;
@@ -271,6 +271,9 @@ var controller = {
 
             var utils = require('../utils');
 
+            for (var i = 0; i < files.length; ++i) {
+                files[i] = model.getProjectFolder() + files[i];
+            }
             utils.removeFiles(files);
 
             var sw = utils.findSubWindow(target);
@@ -393,7 +396,7 @@ var controller = {
 
                     var model = require('./model');
                     var fileEntry = model.fileEntries[fileId];
-                    var script = require(fileEntry.path);
+                    var script = require(model.getProjectFolder() + fileEntry.path);
 
                     contentController.currentInspector.selected.components.push({ script: fileId, instance: script.createInstance() });
                     contentController.render();

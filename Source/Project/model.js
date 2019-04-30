@@ -1,4 +1,4 @@
-var projectFolder = 'C:\\Users\\Vasil\\Desktop\\TestGame\\';
+var projectFolder = undefined;
 var fileMap = 'library.json';
 var assetsFolder = 'Assets';
 
@@ -12,6 +12,16 @@ var model = {
             callback();
             return;
         }
+
+        var electron = require('electron');
+        var remote = electron.remote;
+        var dialog = remote.dialog;
+
+        projectFolder = dialog.showOpenDialog({
+            properties: ['openDirectory']
+        });
+        projectFolder += '\\';
+
         var fs = require('fs');
         model.inited = true;
         fs.exists(projectFolder + fileMap, function (res) {
@@ -32,7 +42,7 @@ var model = {
             else {
                 model.fileEntries = {};
                 var fileEntry = require('./fileEntry');
-                fileEntry.create(projectFolder + assetsFolder);
+                fileEntry.create(assetsFolder);
 
                 console.log(model);
 
@@ -56,7 +66,7 @@ var model = {
     getProjectRoot: function () {
         if (!model.root) {
             for (var i in model.fileEntries) {
-                if (model.fileEntries[i].path === projectFolder + assetsFolder) {
+                if (model.fileEntries[i].path === assetsFolder) {
                     model.root = model.fileEntries[i];
                     break;
                 }
@@ -66,6 +76,12 @@ var model = {
     },
     getProjectPath: function () {
         return projectFolder + assetsFolder;
+    },
+    getAssetsFolder: function () {
+        return assetsFolder;
+    },
+    getProjectFolder: function () {
+        return projectFolder;
     }
 };
 

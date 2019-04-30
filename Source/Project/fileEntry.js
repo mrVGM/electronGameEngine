@@ -12,8 +12,8 @@ var fileEntry = {
             return model.fileEntries[id];
         }
 
-        var projectPath = model.getProjectPath();
-        if (!path.startsWith(model.getProjectPath()))
+        var assetsFolder = model.getAssetsFolder();
+        if (!path.startsWith(assetsFolder))
             return;
 
         var prot = {
@@ -24,11 +24,11 @@ var fileEntry = {
         };
 
         var fs = require('fs');
-        if (fs.lstatSync(path).isDirectory()) {
+        if (fs.lstatSync(model.getProjectFolder() + path).isDirectory()) {
             prot.children = [];
         }
 
-        if (path === projectPath) {
+        if (path === assetsFolder) {
             var fe = fileEntry.deserialize(prot);
             model.fileEntries[fe.id] = fe;
             return fe;
@@ -73,8 +73,9 @@ var fileEntry = {
                 return p[p.length - 1];
             },
             isFolder: function () {
+                var model = require('./model');
                 var fs = require('fs');
-                return fs.lstatSync(fe.path).isDirectory();
+                return fs.lstatSync(model.getProjectFolder() + fe.path).isDirectory();
             },
             render: function (callback, controller) {
                 if (!views) {

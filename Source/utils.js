@@ -41,6 +41,7 @@ var utils = {
                 }
                 return;
             }
+
             var fs = require('fs');
 
             if (fs.lstatSync(files[index]).isDirectory()) {
