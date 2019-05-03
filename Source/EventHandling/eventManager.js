@@ -1,5 +1,5 @@
-var eventHandling = require('./eventPool');
-var pool = eventHandling.create();
+var eventPool = require('./eventPool');
+var pool = eventPool.create();
 
 var manager = {
     addGlobal: function(handler) {
@@ -14,13 +14,19 @@ var manager = {
     handle: function(e) {
         var utils = require('../utils');
         var sw = utils.findSubWindow(e.target);
+        var contentController = undefined;
+        if (sw) {
+            contentController = sw.contentController;
+        }
+
         var p = pool;
-        if (sw.eventPool) {
-            p = eventHandling.create();
-            for (var i = 0; i < sw.eventPool.handlers.legth; ++i) {
-                p.handlers.push(sw.eventPool.handlers[i]);
+        
+        if (contentController && contentController.eventPool) {
+            p = eventPool.create();
+            for (var i = 0; i < contentController.eventPool.handlers.length; ++i) {
+                p.handlers.push(contentController.eventPool.handlers[i]);
             }
-            for (var i = 0; i < pool.handlers.legth; ++i) {
+            for (var i = 0; i < pool.handlers.length; ++i) {
                 p.handlers.push(pool.handlers[i]);
             }
         }

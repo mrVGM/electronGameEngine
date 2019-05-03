@@ -194,10 +194,13 @@ var controller = {
                     }
 
                     sw.windowType = 'hierarchy';
-                    var projectController = require('../HIerarchy/controller');
-                    sw.contentController = projectController.create();
+                    var hierarchyController = require('../HIerarchy/controller');
+                    sw.contentController = hierarchyController.create();
                     sw.contentController.subwindowId = id;
-                    sw.contentController.render();
+                    sw.contentController.init(function() {
+                        console.log('Hierarchy controller init');
+                        sw.contentController.render();
+                    });
                     return true;
                 }
 
@@ -213,8 +216,8 @@ var controller = {
                     }
 
                     sw.windowType = 'project';
-                    var projectController = require('../Project/controller');
-                    sw.contentController = projectController.create();
+                    var hierarchyController = require('../Project/controller');
+                    sw.contentController = hierarchyController.create();
                     sw.contentController.subwindowId = id;
                     sw.contentController.render();
                     return true;

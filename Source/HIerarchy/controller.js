@@ -28,95 +28,6 @@ var controller = {
             controller.events.closeContextMenu = undefined;
         },
         closeContextMenu: undefined,
-        contextMenu: function (e) {
-            var target = e.target;
-            var gme = target.getAttribute('game-object-entry');
-            if (!gme) {
-                return false;
-            }
-            if (!views) {
-                return false;
-            }
-
-            controller.events.closeCM();
-
-            var ejs = require('ejs');
-
-            var contextMenuPlace = target.querySelector('[context-menu-place]');
-            controller.events.contextMenuPlace = contextMenuPlace;
-            while (contextMenuPlace.firstChild) {
-                contextMenuPlace.removeChild(contextMenuPlace.firstChild);
-            }
-
-            console.log(contextMenuPlace);
-
-            var goId = parseInt(gme);
-
-            var go = controller.viewToGameObjectsMap[goId];
-
-            contextMenuPlace.innerHTML = ejs.render(views[contextMenuView], { gm: go });
-
-            contextMenuPlace.style.left = e.offsetX + 'px';
-            contextMenuPlace.style.top = e.offsetY + 'px';
-
-            var eventHandlers = require('../events');
-            if (!controller.events.closeContextMenu) {
-                controller.events.closeContextMenu = function (e) {
-                    var target = e.target;
-                    if (!target.getAttribute('hierarchy-context-menu')) {
-                        controller.events.closeCM();
-                        return true;
-                    }
-                    return false;
-                };
-            }
-            eventHandlers.eventHandlers.mouseClick.unshift(controller.events.closeContextMenu)
-        },
-        create: function (e) {
-            var target = e.target;
-            if (target.getAttribute('hierarchy-context-menu') === 'Create') {
-
-                var sw = target;
-                while (!sw.getAttribute('subwindow')) {
-                    sw = sw.parentElement;
-                }
-                var swId = sw.getAttribute('subwindow');
-                swId = parseInt(swId);
-                var sws = require('../Layout/controller');
-                sw = sws.viewToModelMap[swId];
-
-                var id = target.getAttribute('id');
-                id = parseInt(id);
-                var go = controller.viewToGameObjectsMap[id];
-                var newGO = sw.contentController.createGameObject();
-                go.children.push(newGO);
-                newGO.parent = go;
-                controller.events.closeCM();
-                controller.refresh();
-                return true;
-            }
-            return false;
-        },
-        expand: function (e) {
-            var target = e.target;
-            var go = target.getAttribute('game-object-expand-button');
-            if (!go) {
-                return false;
-            }
-            go = parseInt(go);
-
-            var goEl = target;
-            while (!goEl.getAttribute('subwindow')) {
-                goEl = goEl.parentElement;
-            }
-            var sw = goEl.getAttribute('subwindow');
-            sw = parseInt(sw);
-            var sws = require('../Layout/controller');
-            sw = sws.viewToModelMap[sw];
-            sw.contentController.expandedMap[go] = !sw.contentController.expandedMap[go];
-            controller.refresh();
-            return true;
-        },
         delete: function (e) {
             var target = e.target;
             if (target.getAttribute('hierarchy-context-menu') === 'Delete') {
@@ -266,6 +177,7 @@ var controller = {
             var sw = subwindow.viewToModelMap[id];
             if (sw.windowType === 'hierarchy') {
                 sw.contentController.render();
+                sw.contentController.state.setState(sw.contentController.states.def);
             }
         }
     },
@@ -275,9 +187,124 @@ var controller = {
             views = res;
         });
 
+        var st = require('../State/state');
+
         var ctrl = {
             subwindowId: undefined,
             expandedMap: {},
+            eventPool: undefined,
+            state: st.create(),
+            states: {
+                def: {
+                    enterState: function() {
+                        ctrl.eventPool.handlers = [];
+                        ctrl.eventPool.handlers.push({
+                            priority: 0,
+                            handle: function (e) {
+                                if (e.type !== 'contextmenu') {
+                                    return false;
+                                }
+        
+                                var target = e.target;
+                                var gme = target.getAttribute('game-object-entry');
+                                if (!gme) {
+                                    return false;
+                                }
+                                if (!views) {
+                                    return false;
+                                }
+                    
+                                var ejs = require('ejs');
+                    
+                                var contextMenuPlace = target.querySelector('[context-menu-place]');
+                                controller.events.contextMenuPlace = contextMenuPlace;
+                                while (contextMenuPlace.firstChild) {
+                                    contextMenuPlace.removeChild(contextMenuPlace.firstChild);
+                                }
+                    
+                                var goId = parseInt(gme);
+                    
+                                var go = controller.viewToGameObjectsMap[goId];
+                    
+                                contextMenuPlace.innerHTML = ejs.render(views[contextMenuView], { gm: go });
+                    
+                                contextMenuPlace.style.left = e.offsetX + 'px';
+                                contextMenuPlace.style.top = e.offsetY + 'px';
+
+                                ctrl.state.setState(ctrl.states.modal);
+                            }
+                        });
+
+                        ctrl.eventPool.handlers.push({
+                            priority: 0,
+                            handle: function (e) {
+                                if (e.type !== 'click') {
+                                    return false;
+                                }
+                                var target = e.target;
+                                var go = target.getAttribute('game-object-expand-button');
+                                if (!go) {
+                                    return false;
+                                }
+                                go = parseInt(go);
+                    
+                                var goEl = target;
+                                while (!goEl.getAttribute('subwindow')) {
+                                    goEl = goEl.parentElement;
+                                }
+                                var sw = goEl.getAttribute('subwindow');
+                                sw = parseInt(sw);
+                                var sws = require('../Layout/controller');
+                                sw = sws.viewToModelMap[sw];
+                                sw.contentController.expandedMap[go] = !sw.contentController.expandedMap[go];
+                                controller.refresh();
+                                return true;
+                            }
+                        });
+                    },
+                    exitState: function() {}
+                },
+                modal: {
+                    enterState: function() {
+                        ctrl.eventPool.handlers = [];
+
+                        ctrl.eventPool.handlers.push({
+                            priority: 0,
+                            handle: function (e) {
+                                if (e.type !== 'click') {
+                                    return false;
+                                }
+
+                                var target = e.target;
+                                if (target.getAttribute('hierarchy-context-menu') === 'Create') {
+                    
+                                    var sw = target;
+                                    while (!sw.getAttribute('subwindow')) {
+                                        sw = sw.parentElement;
+                                    }
+                                    var swId = sw.getAttribute('subwindow');
+                                    swId = parseInt(swId);
+                                    var sws = require('../Layout/controller');
+                                    sw = sws.viewToModelMap[swId];
+                    
+                                    var id = target.getAttribute('id');
+                                    id = parseInt(id);
+                                    var go = controller.viewToGameObjectsMap[id];
+                                    var newGO = sw.contentController.createGameObject();
+                                    go.children.push(newGO);
+                                    newGO.parent = go;
+                                    controller.events.closeCM();
+                                    controller.refresh();
+                                    ctrl.state.setState(ctrl.states.def);
+                                    return true;
+                                }
+                                return false;
+                            }
+                        });
+                    },
+                    exitState: function() {}
+                }
+            },
             isExpanded: function (id) {
                 if(ctrl.expandedMap[id]) {
                     return true;
@@ -302,24 +329,20 @@ var controller = {
 
                 controller.viewToGameObjectsMap[go.id] = undefined;
             },
-            init: function () {
+            init: function (callback) {
                 var model = require('./model');
                 if (!model.root) {
                     var rootObject = ctrl.createGameObject();
                     model.root = rootObject;
                 }
-                if (controller.events.setup) {
-                    return;
-                }
 
-                var eventHandlers = require('../events');
-                eventHandlers.eventHandlers.contextMenu.push(controller.events.contextMenu);
-                eventHandlers.eventHandlers.mouseClick.push(controller.events.create);
-                eventHandlers.eventHandlers.mouseClick.push(controller.events.expand);
-                eventHandlers.eventHandlers.mouseClick.push(controller.events.delete);
-                eventHandlers.eventHandlers.mouseClick.push(controller.events.rename);
-                eventHandlers.eventHandlers.mouseDown.push(controller.events.drag);
-                controller.events.setup = true;
+                var eventPool = require('../EventHandling/eventPool');
+                ctrl.eventPool = eventPool.create();
+
+                ctrl.state.setState(ctrl.states.def);
+
+                var go = require('./gameObject');
+                go.init(callback);
             },
             render: function () {
                 var init = require('../init');
@@ -345,16 +368,13 @@ var controller = {
 
                 var model = require('./model');
 
-                model.root.render(ctrl, function (html) {
-                    wnd.innerHTML = html;
-                });
+                wnd.innerHTML = model.root.render(ctrl);
             },
             getRoot: function () {
                 var model = require('./model');
                 return model.root;
             }
         };
-        ctrl.init();
         return ctrl;
     }
 };

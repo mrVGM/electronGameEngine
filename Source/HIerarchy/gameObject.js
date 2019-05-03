@@ -5,6 +5,17 @@ var viewsDir = __dirname + '\\Views\\';
 
 var gameObject = {
     idCount: 0,
+    init: function(callback) {
+        if (views) {
+            callback();
+            return;
+        }
+        var utils = require('../utils');
+        utils.readFiles(viewsDir, viewNames, function(res) {
+            views = res;
+            callback();
+        });
+    },
     create: function () {
         var gm = {
             id: gameObject.idCount++,
@@ -12,19 +23,10 @@ var gameObject = {
             parent: undefined,
             children: [],
             components: [],
-            render: function(controller, callback) {
-                if (!views) {
-                    views = {};
-                    var utils = require('../utils');
-                    utils.readFiles(viewsDir, viewNames, function (res) {
-                        views = res;
-                        gm.render(controller, callback);
-                    });
-                    return;
-                }
+            render: function(controller) {
                 var ejs = require('ejs');
                 var res = ejs.render(views[gmView], { ctrl: controller, gm: gm });
-                callback(res);
+                return res;
             },
             renderSync(controller) {
                 var ejs = require('ejs');
