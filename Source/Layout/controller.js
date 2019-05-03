@@ -32,182 +32,214 @@ var controller = {
         this.viewToModelMap[sw.id] = sw;
         model.root = sw;
 
-        var t = this;
-        var events = require('../events');
-        events.eventHandlers.mouseDown.push(function (e) {
-            if (e.button !== 0) {
-                return false;
-            }
-            var target = e.target;
+        var eventManager = require('../EventHandling/eventManager');
 
-            var subwindow = target.getAttribute('split-down-subwindow-button');
-            if (subwindow) {
-                subwindow = parseInt(subwindow);
-                var sw = controller.viewToModelMap[subwindow];
-                controller.splitVerical(sw);
-                return true;
-            }
-            subwindow = target.getAttribute('split-right-subwindow-button');
-            if (subwindow) {
-                subwindow = parseInt(subwindow);
-                var sw = controller.viewToModelMap[subwindow];
-                controller.splitHorizontal(sw);
-                return true;
-            }
-            return false;
-        });
+        eventManager.addGlobal({
+            priority: 1000,
+            handle: function (e) {
+                if (e.type !== 'click') {
+                    return;
+                }
+                if (e.button !== 0) {
+                    return false;
+                }
+                var target = e.target;
 
-        events.eventHandlers.mouseDown.push(function (e) {
-            if (e.button !== 0) {
-                return false;
-            }
-
-            var target = e.target;
-
-            var horizontalSeparator = target.getAttribute('horizontal-separator-between');
-            if (horizontalSeparator) {
-                var affected = horizontalSeparator.split(',');
-                var up = parseInt(affected[0]);
-                var down = parseInt(affected[1]);
-
-                up = controller.viewToModelMap[up];
-                down = controller.viewToModelMap[down];
-
-                var parent = up.parent;
-
-                var mouseUpHandler = function (evt) {
-                    var el = evt.target;
-                    var coord = [evt.offsetX, evt.offsetY];
-
-                    while (true) {
-                        var swId = el.getAttribute('subwindow');
-                        if (swId && parseInt(swId) === parent.id) {
-                            break;
-                        }
-                        coord[0] += el.offsetLeft;
-                        coord[1] += el.offsetTop;
-                        el = el.parentElement;
-                    }
-
-                    var xCoord = coord[0] / el.offsetWidth;
-                    up.dim.width = xCoord - up.dim.left;
-                    down.dim.width = down.dim.left + down.dim.width - xCoord;
-                    down.dim.left = xCoord;
-
-                    var index = events.eventHandlers.mouseUp.indexOf(mouseUpHandler);
-                    events.eventHandlers.mouseUp.splice(index, 1);
-                    controller.refresh();
+                var subwindow = target.getAttribute('split-down-subwindow-button');
+                if (subwindow) {
+                    subwindow = parseInt(subwindow);
+                    var sw = controller.viewToModelMap[subwindow];
+                    controller.splitVerical(sw);
                     return true;
                 }
-
-                events.eventHandlers.mouseUp.push(mouseUpHandler);
-                return true;
-            }
-
-            var verticalSeparator = target.getAttribute('vertical-separator-between');
-            if (verticalSeparator) {
-                var affected = verticalSeparator.split(',');
-                var up = parseInt(affected[0]);
-                var down = parseInt(affected[1]);
-
-                up = controller.viewToModelMap[up];
-                down = controller.viewToModelMap[down];
-
-                var parent = up.parent;
-
-                var mouseUpHandler = function (evt) {
-                    var el = evt.target;
-                    var coord = [evt.offsetX, evt.offsetY];
-
-                    while (true) {
-                        var swId = el.getAttribute('subwindow');
-                        if (swId && parseInt(swId) === parent.id) {
-                            break;
-                        }
-                        coord[0] += el.offsetLeft;
-                        coord[1] += el.offsetTop;
-                        el = el.parentElement;
-                    }
-
-                    var yCoord = coord[1] / el.offsetHeight;
-                    up.dim.height = yCoord - up.dim.top;
-                    down.dim.height = down.dim.top + down.dim.height - yCoord;
-                    down.dim.top = yCoord;
-
-                    var index = events.eventHandlers.mouseUp.indexOf(mouseUpHandler);
-                    events.eventHandlers.mouseUp.splice(index, 1);
-                    controller.refresh();
+                subwindow = target.getAttribute('split-right-subwindow-button');
+                if (subwindow) {
+                    subwindow = parseInt(subwindow);
+                    var sw = controller.viewToModelMap[subwindow];
+                    controller.splitHorizontal(sw);
                     return true;
                 }
-
-                events.eventHandlers.mouseUp.push(mouseUpHandler);
-                return true;
+                return false;
             }
         });
 
-        events.eventHandlers.mouseClick.push(function (e) {
-            if (e.button !== 0) {
-                return false;
-            }
+        eventManager.addGlobal({
+            priority: 1000,
+            handle: function (e) {
+                if (e.type !== 'mousedown') {
+                    return;
+                }
+                if (e.button !== 0) {
+                    return false;
+                }
 
-            var target = e.target;
-            if (target.getAttribute('window-type') === 'hierarchy') {
-                console.log('Open hierarchy');
+                var target = e.target;
 
-                var id = target.getAttribute('id');
-                id = parseInt(id);
+                var horizontalSeparator = target.getAttribute('horizontal-separator-between');
+                if (horizontalSeparator) {
+                    var affected = horizontalSeparator.split(',');
+                    var up = parseInt(affected[0]);
+                    var down = parseInt(affected[1]);
 
-                var sw = controller.viewToModelMap[id];
-                if (sw.windowType === 'hierarchy') {
+                    up = controller.viewToModelMap[up];
+                    down = controller.viewToModelMap[down];
+
+                    var parent = up.parent;
+
+                    var mouseUpHandler = {
+                        priority: 999,
+                        handle: function (evt) {
+                            if (evt.type !== 'mouseup') {
+                                return;
+                            }
+
+                            var el = evt.target;
+                            var coord = [evt.offsetX, evt.offsetY];
+
+                            while (true) {
+                                var swId = el.getAttribute('subwindow');
+                                if (swId && parseInt(swId) === parent.id) {
+                                    break;
+                                }
+                                coord[0] += el.offsetLeft;
+                                coord[1] += el.offsetTop;
+                                el = el.parentElement;
+                            }
+
+                            var xCoord = coord[0] / el.offsetWidth;
+                            up.dim.width = xCoord - up.dim.left;
+                            down.dim.width = down.dim.left + down.dim.width - xCoord;
+                            down.dim.left = xCoord;
+
+                            eventManager.removeGlobal(mouseUpHandler);
+
+                            controller.refresh();
+                            return true;
+                        }
+                    };
+
+                    eventManager.addGlobal(mouseUpHandler);
                     return true;
                 }
 
-                sw.windowType = 'hierarchy';
-                var projectController = require('../HIerarchy/controller');
-                sw.contentController = projectController.create();
-                sw.contentController.subwindowId = id;
-                sw.contentController.render();
-                return true;
+                var verticalSeparator = target.getAttribute('vertical-separator-between');
+                if (verticalSeparator) {
+                    var affected = verticalSeparator.split(',');
+                    var up = parseInt(affected[0]);
+                    var down = parseInt(affected[1]);
+
+                    up = controller.viewToModelMap[up];
+                    down = controller.viewToModelMap[down];
+
+                    var parent = up.parent;
+
+                    var mouseUpHandler = {
+                        priority: 999,
+                        handle: function (evt) {
+                            if (evt.type !== 'mouseup') {
+                                return;
+                            }
+
+                            var el = evt.target;
+                            var coord = [evt.offsetX, evt.offsetY];
+
+                            while (true) {
+                                var swId = el.getAttribute('subwindow');
+                                if (swId && parseInt(swId) === parent.id) {
+                                    break;
+                                }
+                                coord[0] += el.offsetLeft;
+                                coord[1] += el.offsetTop;
+                                el = el.parentElement;
+                            }
+
+                            var yCoord = coord[1] / el.offsetHeight;
+                            up.dim.height = yCoord - up.dim.top;
+                            down.dim.height = down.dim.top + down.dim.height - yCoord;
+                            down.dim.top = yCoord;
+
+                            eventManager.removeGlobal(mouseUpHandler);
+                            controller.refresh();
+                            return true;
+                        }
+                    };
+
+                    eventManager.addGlobal(mouseUpHandler);
+                    return true;
+                }
             }
+        });
 
-            if (target.getAttribute('window-type') === 'project') {
-                console.log('Open project');
+        eventManager.addGlobal({
+            priority: 1000,
+            handle: function (e) {
+                if (e.type !== 'click') {
+                    return;
+                }
 
-                var id = target.getAttribute('id');
-                id = parseInt(id);
+                if (e.button !== 0) {
+                    return false;
+                }
 
-                var sw = controller.viewToModelMap[id];
-                if (sw.windowType === 'project') {
+                var target = e.target;
+                if (target.getAttribute('window-type') === 'hierarchy') {
+                    console.log('Open hierarchy');
+
+                    var id = target.getAttribute('id');
+                    id = parseInt(id);
+
+                    var sw = controller.viewToModelMap[id];
+                    if (sw.windowType === 'hierarchy') {
+                        return true;
+                    }
+
+                    sw.windowType = 'hierarchy';
+                    var projectController = require('../HIerarchy/controller');
+                    sw.contentController = projectController.create();
+                    sw.contentController.subwindowId = id;
+                    sw.contentController.render();
                     return true;
                 }
 
-                sw.windowType = 'project';
-                var projectController = require('../Project/controller');
-                sw.contentController = projectController.create();
-                sw.contentController.subwindowId = id;
-                sw.contentController.render();
-                return true;
-            }
+                if (target.getAttribute('window-type') === 'project') {
+                    console.log('Open project');
 
-            if (target.getAttribute('window-type') === 'inspector') {
-                console.log('Open inspector');
+                    var id = target.getAttribute('id');
+                    id = parseInt(id);
 
-                var id = target.getAttribute('id');
-                id = parseInt(id);
+                    var sw = controller.viewToModelMap[id];
+                    if (sw.windowType === 'project') {
+                        return true;
+                    }
 
-                var sw = controller.viewToModelMap[id];
-                if (sw.windowType === 'inspector') {
+                    sw.windowType = 'project';
+                    var projectController = require('../Project/controller');
+                    sw.contentController = projectController.create();
+                    sw.contentController.subwindowId = id;
+                    sw.contentController.render();
                     return true;
                 }
 
-                sw.windowType = 'inspector';
-                var inspectorController = require('../Inspector/controller');
-                sw.contentController = inspectorController.create();
-                sw.contentController.subwindowId = id;
-                sw.contentController.render();
-                return true;
-            }
+                if (target.getAttribute('window-type') === 'inspector') {
+                    console.log('Open inspector');
 
+                    var id = target.getAttribute('id');
+                    id = parseInt(id);
+
+                    var sw = controller.viewToModelMap[id];
+                    if (sw.windowType === 'inspector') {
+                        return true;
+                    }
+
+                    sw.windowType = 'inspector';
+                    var inspectorController = require('../Inspector/controller');
+                    sw.contentController = inspectorController.create();
+                    sw.contentController.subwindowId = id;
+                    sw.contentController.render();
+                    return true;
+                }
+
+            }
         });
     }
 };

@@ -24,12 +24,12 @@ var exp = {
         controller.init();
         this.refresh();
 
-        var events = require('./events');
-        this.parent.addEventListener('mousedown', events.handleEvent);
-        this.parent.addEventListener('mouseup', events.handleEvent);
-        this.parent.addEventListener('mousemove', events.handleEvent);
-        this.parent.addEventListener('click', events.handleEvent);
-        this.parent.addEventListener('contextmenu', events.handleEvent);
+        var eventManager = require('./EventHandling/eventManager');
+        this.parent.addEventListener('mousedown', eventManager.handle);
+        this.parent.addEventListener('mouseup', eventManager.handle);
+        this.parent.addEventListener('mousemove', eventManager.handle);
+        this.parent.addEventListener('click', eventManager.handle);
+        this.parent.addEventListener('contextmenu', eventManager.handle);
     }
 }
 
