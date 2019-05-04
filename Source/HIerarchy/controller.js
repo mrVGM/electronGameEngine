@@ -8,48 +8,7 @@ var controller = {
     events: {
         setup: false,
         contextMenuPlace: undefined,
-        closeCM: function () {
-            if (!controller.events.contextMenuPlace) {
-                return;
-            }
-
-            while (controller.events.contextMenuPlace.firstChild) {
-                controller.events.contextMenuPlace.removeChild(controller.events.contextMenuPlace.firstChild);
-            }
-            controller.events.contextMenuPlace.style.left = '0%';
-            controller.events.contextMenuPlace.style.top = '0%';
-            controller.events.contextMenuPlace = undefined;
-
-            var eventHandlers = require('../events');
-            var index = eventHandlers.eventHandlers.mouseClick.indexOf(controller.events.closeContextMenu);
-            if (index >= 0) {
-                eventHandlers.eventHandlers.mouseClick.splice(index, 1);
-            }
-            controller.events.closeContextMenu = undefined;
-        },
         closeContextMenu: undefined,
-        delete: function (e) {
-            var target = e.target;
-            if (target.getAttribute('hierarchy-context-menu') === 'Delete') {
-                var sw = target;
-                while (!sw.getAttribute('subwindow')) {
-                    sw = sw.parentElement;
-                }
-                var swId = sw.getAttribute('subwindow');
-                swId = parseInt(swId);
-                var sws = require('../Layout/controller');
-                sw = sws.viewToModelMap[swId];
-
-                var id = target.getAttribute('id');
-                id = parseInt(id);
-                var go = controller.viewToGameObjectsMap[id];
-                sw.contentController.deleteGameObject(go);
-                controller.events.closeCM();
-                controller.refresh();
-                return true;
-            }
-            return false;
-        },
         drag: function (e) {
             if (e.button !== 0) {
                 return false;
@@ -122,46 +81,6 @@ var controller = {
 
             return true;
         },
-        rename: function (e) {
-            var target = e.target;
-            if (target.getAttribute('hierarchy-context-menu') === 'Rename') {
-                var sw = target;
-                while (!sw.getAttribute('subwindow')) {
-                    sw = sw.parentElement;
-                }
-                var swId = sw.getAttribute('subwindow');
-                swId = parseInt(swId);
-                var sws = require('../Layout/controller');
-                sw = sws.viewToModelMap[swId];
-
-                var id = target.getAttribute('id');
-                id = parseInt(id);
-                var go = controller.viewToGameObjectsMap[id];
-
-                while (!target.getAttribute('game-object-entry')) {
-                    target = target.parentElement;
-                }
-
-                while (target.firstChild) {
-                    target.removeChild(target.firstChild);
-                }
-
-                var ejs = require('ejs');
-                target.innerHTML = ejs.render(views[renameView], { go: go });
-
-                var renameInput = target.querySelector('[rename-game-object]');
-                renameInput.value = go.name;
-                renameInput.addEventListener('keypress', function (e) {
-                    if (e.key === 'Enter' && renameInput.value !== '') {
-                        go.name = renameInput.value;
-                        controller.refresh();
-                    }
-                });
-
-                return true;
-            }
-            return false;
-        },
     },
     viewToGameObjectsMap: {},
     refresh: function () {
@@ -193,6 +112,7 @@ var controller = {
             subwindowId: undefined,
             expandedMap: {},
             eventPool: undefined,
+            stateContext: {},
             state: st.create(),
             states: {
                 def: {
@@ -293,7 +213,6 @@ var controller = {
                                     var newGO = sw.contentController.createGameObject();
                                     go.children.push(newGO);
                                     newGO.parent = go;
-                                    controller.events.closeCM();
                                     controller.refresh();
                                     ctrl.state.setState(ctrl.states.def);
                                     return true;
@@ -301,9 +220,133 @@ var controller = {
                                 return false;
                             }
                         });
+                        
+                        ctrl.eventPool.handlers.push({
+                            priority: 0,
+                            handle: function (e) {
+                                if (e.type !== 'click') {
+                                    return false;
+                                }
+
+                                var target = e.target;
+                                if (target.getAttribute('hierarchy-context-menu') === 'Delete') {
+                                    var sw = target;
+                                    while (!sw.getAttribute('subwindow')) {
+                                        sw = sw.parentElement;
+                                    }
+                                    var swId = sw.getAttribute('subwindow');
+                                    swId = parseInt(swId);
+                                    var sws = require('../Layout/controller');
+                                    sw = sws.viewToModelMap[swId];
+                    
+                                    var id = target.getAttribute('id');
+                                    id = parseInt(id);
+                                    var go = controller.viewToGameObjectsMap[id];
+                                    sw.contentController.deleteGameObject(go);
+
+                                    controller.refresh();
+                                    ctrl.render();
+                                    ctrl.state.setState(ctrl.states.def);
+
+                                    return true;
+                                }
+                                return false;
+                            }
+                        });
+                        
+                        ctrl.eventPool.handlers.push({
+                            priority: 0,
+                            handle: function (e) {
+                                if (e.type !== 'click') {
+                                    return false;
+                                }
+
+                                var target = e.target;
+                                if (target.getAttribute('hierarchy-context-menu') === 'Rename') {
+                                    var sw = target;
+                                    while (!sw.getAttribute('subwindow')) {
+                                        sw = sw.parentElement;
+                                    }
+                                    var swId = sw.getAttribute('subwindow');
+                                    swId = parseInt(swId);
+                                    var sws = require('../Layout/controller');
+                                    sw = sws.viewToModelMap[swId];
+                    
+                                    var id = target.getAttribute('id');
+                                    id = parseInt(id);
+                                    
+                                    while (!target.getAttribute('game-object-entry')) {
+                                        target = target.parentElement;
+                                    }
+
+                                    ctrl.stateContext.renaming = { elem: target, goId: id};
+                                    ctrl.state.setState(ctrl.states.renameGO);
+
+                                    return true;
+                                }
+                                return false;
+                            }
+                        });
+
+                        ctrl.eventPool.handlers.push({
+                            priority: 10,
+                            handle: function(e) {
+                                if (e.type === 'keypress') {
+                                    return false;
+                                }
+                                if (e.type === 'mousemove') {
+                                    return false;
+                                }
+                                var target = e.target;
+                                var menuItem = target.getAttribute('hierarchy-context-menu');
+                                if (!menuItem) {
+                                    ctrl.state.setState(ctrl.states.def);
+                                    ctrl.render();
+                                    return true;
+                                }
+                                return false;
+                            }
+                        });
                     },
                     exitState: function() {}
-                }
+                },
+                renameGO: {
+                    enterState: function() {
+                        ctrl.eventPool.handlers = [];
+
+                        var go = controller.viewToGameObjectsMap[ctrl.stateContext.renaming.goId];
+                        var target = ctrl.stateContext.renaming.elem;
+
+                        while (target.firstChild) {
+                            target.removeChild(target.firstChild);
+                        }
+        
+                        var ejs = require('ejs');
+                        target.innerHTML = ejs.render(views[renameView], { go: go });
+        
+                        var renameInput = target.querySelector('[rename-game-object]');
+                        renameInput.value = go.name;
+
+                        ctrl.eventPool.handlers.push({
+                            priority: 0,
+                            handle: function(e) {
+                                if (e.type !== 'keypress') {
+                                    return false;
+                                }
+                                
+                                if (e.key === 'Enter' && renameInput.value !== '') {
+                                    go.name = renameInput.value;
+                                    controller.refresh();
+                                    ctrl.render();
+                                    ctrl.state.setState(ctrl.states.def);
+                                }
+                                return true;
+                            }
+                        });
+                    },
+                    exitState() {
+                    }
+                },
             },
             isExpanded: function (id) {
                 if(ctrl.expandedMap[id]) {

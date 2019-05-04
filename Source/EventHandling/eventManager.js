@@ -1,6 +1,8 @@
 var eventPool = require('./eventPool');
 var pool = eventPool.create();
 
+var customMessagesPool = eventPool.create();
+
 var manager = {
     addGlobal: function(handler) {
         pool.handlers.push(handler);
@@ -32,6 +34,18 @@ var manager = {
         }
         
         p.handleEvent(e);
+    },
+    raiseCustomEvent: function(e) {
+        customMessagesPool.handleEvent(e);
+    },
+    addCustom: function(handler) {
+        customMessagesPool.handlers.push(handler);
+    },
+    removeCustom: function(handler) {
+        var index = customMessagesPool.handlers.indexOf(handler);
+        if (index >= 0) {
+            customMessagesPool.handlers.splice(index);
+        }
     }
 };
 
