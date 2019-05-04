@@ -6,13 +6,7 @@ var model = {
     idCount: 0,
     fileEntries: undefined,
     root: undefined,
-    inited: false,
     init: function (callback) {
-        if (model.inited) {
-            callback();
-            return;
-        }
-
         var electron = require('electron');
         var remote = electron.remote;
         var dialog = remote.dialog;

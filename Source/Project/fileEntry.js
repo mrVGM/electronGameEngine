@@ -4,6 +4,17 @@ var viewFiles = [fileView];
 var views = undefined;
 
 var fileEntry = {
+    init: function(callback) {
+        if (!views) {
+            var utils = require('../utils');
+            utils.readFiles(viewFolder, viewFiles, function (res) {
+                views = res;
+                callback();
+            });
+            return;
+        }
+        callback();
+    },
     create: function (path) {
         var model = require('./model');
 
@@ -77,18 +88,9 @@ var fileEntry = {
                 var fs = require('fs');
                 return fs.lstatSync(model.getProjectFolder() + fe.path).isDirectory();
             },
-            render: function (callback, controller) {
-                if (!views) {
-                    var utils = require('../utils');
-                    utils.readFiles(viewFolder, viewFiles, function (res) {
-                        views = res;
-                        fe.render(callback, controller);
-                    });
-                    return;
-                }
-
+            render: function (controller) {
                 var ejs = require('ejs');
-                callback(ejs.render(views[fileView], { fileEntry: fe, ctrl: controller }));
+                return ejs.render(views[fileView], { fileEntry: fe, ctrl: controller });
             },
             renderSync: function (controller) {
                 var ejs = require('ejs');

@@ -432,16 +432,29 @@ var controller = {
         }
     },
     create: function () {
-        if (!views) {
-            var utils = require('../utils');
-            utils.readFiles(viewsDir, viewsFiles, function (res) {
-                views = res;
-            });
-        }
-
+        
         controller.events.registerEvents();
 
         var ctrl = {
+            init: function(callback) {
+                function cb() {
+                    var fe = require('./fileEntry');
+                    fe.init(function () {
+                        var model = require('./model');
+                        model.init(callback);
+                    })
+                }
+
+                if (!views) {
+                    var utils = require('../utils');
+                    utils.readFiles(viewsDir, viewsFiles, function (res) {
+                        views = res;
+                        cb();
+                    });
+                    return;
+                }
+                callback();
+            },
             expanded: {},
             render: function () {
                 var init = require('../init');
@@ -465,12 +478,8 @@ var controller = {
                 }
 
                 var model = require('./model');
-                model.init(function () {
-                    var root = model.getProjectRoot();
-                    root.render(function (html) {
-                        wnd.innerHTML = html;
-                    }, ctrl);
-                });
+                var root = model.getProjectRoot();
+                wnd.innerHTML = root.render(ctrl);
             },
             getFileEntryById: function (id) {
                 var model = require('./model');
