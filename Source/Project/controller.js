@@ -6,321 +6,6 @@ var viewsDir = __dirname + '\\Views\\';
 
 var controller = {
     events: {
-        registered: false,
-        cancelContextMenu: undefined,
-        rename: function (e) {
-            if (e.button !== 0) {
-                return false;
-            }
-
-            var target = e.target;
-            var menuItem = target.getAttribute('project-context-menu');
-            if (menuItem !== 'Rename') {
-                return false;
-            }
-
-            var id = target.getAttribute('id');
-            id = parseInt(id);
-
-            var model = require('./model');
-            var fileEntry = model.fileEntries[id];
-
-            var elem = target;
-            while (!elem.getAttribute('file-entry')) {
-                elem = elem.parentElement;
-            }
-
-            while (elem.firstChild) {
-                elem.removeChild(elem.firstChild);
-            }
-
-            var ejs = require('ejs');
-            var html = ejs.render(views[renameInput], { fileEntry: fileEntry });
-
-            elem.innerHTML = html;
-
-            controller.events.clearContextMenuEvents();
-
-            var input = elem.querySelector('[rename-file-object]');
-            input.value = fileEntry.getName();
-            input.addEventListener('keypress', function (e) {
-
-                if (e.key !== 'Enter' || input.value === '')
-                    return;
-
-                var target = e.target;
-
-                var id = target.getAttribute('rename-file-object');
-                id = parseInt(id);
-
-                var model = require('./model');
-                var fe = model.fileEntries[id];
-
-                var utils = require('../utils');
-                var sw = utils.findSubWindow(target);
-                var contentController = sw.contentController;
-
-                var dir = model.fileEntries[fe.parent];
-
-                var fs = require('fs');
-                var newPath = dir.path + '\\' + input.value;
-
-                fs.exists(model.getProjectFolder() + newPath, function (res) { 
-                    if (!res) {
-                        fs.rename(model.getProjectFolder() + fe.path, model.getProjectFolder() + newPath, function (err) {
-                            if (!err) {
-                                fe.path = newPath;
-
-                                function repairPaths(fileEntry) {
-                                    fileEntry.path = model.fileEntries[fileEntry.parent].path + '\\' + fileEntry.getName();
-                                    if (!fileEntry.children) {
-                                        return;
-                                    }
-                                    for (var i = 0; i < fileEntry.children.length; ++i) {
-                                        repairPaths(model.fileEntries[fileEntry.children[i]]);
-                                    }
-                                }
-
-                                repairPaths(fe);
-
-                                model.flush();
-                            }
-                            contentController.render();
-                        });
-                    } else {
-                        contentController.render();
-                    }
-                });
-            });
-
-            return true;
-        },
-        create: function (e) {
-            if (e.button !== 0) {
-                return false;
-            }
-
-            var target = e.target;
-            var menuItem = target.getAttribute('project-context-menu');
-            if (menuItem !== 'Create') {
-                return false;
-            }
-
-            controller.events.clearContextMenuEvents();
-
-            var id = target.getAttribute('id');
-            id = parseInt(id);
-
-            var model = require('./model');
-            var fileEntry = model.fileEntries[id];
-
-            if (!fileEntry.isFolder()) {
-                var el = target;
-                while (!el.getAttribute('context-menu-place')) {
-                    el = el.parentElement;
-                }
-                while (el.firstChild) {
-                    el.removeChild(el.firstChild);
-                }
-                return true;
-            }
-
-            var fs = require('fs');
-            var newPath = fileEntry.path + '\\NewFile';
-            if (fs.existsSync(model.getProjectFolder() + newPath)) {
-                var index = 0;
-
-                while (fs.existsSync(model.getProjectFolder() + newPath + index)) {
-                    ++index;
-                }
-                newPath += index;
-            }
-
-            fs.writeFile(model.getProjectFolder() + newPath, '', function () {
-                var fe = require('./fileEntry');
-                fe.create(newPath);
-                model.flush();
-
-                var elem = target;
-                while (!elem.getAttribute('subwindow')) {
-                    elem = elem.parentElement;
-                }
-                var swId = elem.getAttribute('subwindow');
-                swId = parseInt(swId);
-                var swcontroller = require('../Layout/controller');
-                var sw = swcontroller.viewToModelMap[swId];
-                sw.contentController.render();
-            });
-
-            return true;
-        },
-        createFolder: function (e) {
-            if (e.button !== 0) {
-                return false;
-            }
-
-            var target = e.target;
-            var menuItem = target.getAttribute('project-context-menu');
-            if (menuItem !== 'CreateFolder') {
-                return false;
-            }
-
-            controller.events.clearContextMenuEvents();
-
-            var id = target.getAttribute('id');
-            id = parseInt(id);
-
-            var model = require('./model');
-            var fileEntry = model.fileEntries[id];
-
-            if (!fileEntry.isFolder()) {
-                var el = target;
-                while (!el.getAttribute('context-menu-place')) {
-                    el = el.parentElement;
-                }
-                while (el.firstChild) {
-                    el.removeChild(el.firstChild);
-                }
-                return true;
-            }
-
-            var fs = require('fs');
-            var newPath = fileEntry.path + '\\NewFolder';
-            if (fs.existsSync(model.getProjectFolder() + newPath)) {
-                var index = 0;
-
-                while (fs.existsSync(model.getProjectFolder() + newPath + index)) {
-                    ++index;
-                }
-                newPath += index;
-            }
-
-            fs.mkdir(model.getProjectFolder() + newPath, function () {
-                var fe = require('./fileEntry');
-                fe.create(newPath);
-                model.flush();
-
-                var elem = target;
-                while (!elem.getAttribute('subwindow')) {
-                    elem = elem.parentElement;
-                }
-                var swId = elem.getAttribute('subwindow');
-                swId = parseInt(swId);
-                var swcontroller = require('../Layout/controller');
-                var sw = swcontroller.viewToModelMap[swId];
-                sw.contentController.render();
-            });
-
-            return true;
-        },
-        delete: function (e) {
-            if (e.button !== 0) {
-                return false;
-            }
-
-            var target = e.target;
-            var menuItem = target.getAttribute('project-context-menu');
-            if (menuItem !== 'Delete') {
-                return false;
-            }
-
-            console.log('delete', e);
-
-            controller.events.clearContextMenuEvents();
-
-            var id = target.getAttribute('id');
-            id = parseInt(id);
-
-            var model = require('./model');
-            var fileEntry = model.fileEntries[id];
-
-            if (model.getAssetsFolder() === fileEntry.path) {
-                var el = target;
-                while (!el.getAttribute('context-menu-place')) {
-                    el = el.parentElement;
-                }
-                while (el.firstChild) {
-                    el.removeChild(el.firstChild);
-                }
-                return true;
-            }
-            var files = [];
-
-            function remove(fe, flush) {
-                var model = require('./model');
-
-                if (fe.children) {
-                    for (var i = 0; i < fe.children.length; ++i) {
-                        remove(model.fileEntries[fe.children[i]], false);
-                    }
-                }
-
-                var parent = model.fileEntries[fe.parent];
-                var index = parent.children.indexOf(fe.id);
-                parent.children.splice(index, 1);
-                
-                delete model.fileEntries[fe.id];
-                files.push(fe.path);
-
-                if (flush) {
-                    model.flush();
-                }
-            }
-
-            remove(fileEntry, true);
-
-            var utils = require('../utils');
-
-            for (var i = 0; i < files.length; ++i) {
-                files[i] = model.getProjectFolder() + files[i];
-            }
-            utils.removeFiles(files);
-
-            var sw = utils.findSubWindow(target);
-
-            sw.contentController.render();
-            return true;
-        },
-        clearContextMenuEvents: function () {
-            var events = require('../events');
-            var index = events.eventHandlers.mouseClick.indexOf(controller.events.cancelContextMenu);
-            events.eventHandlers.mouseClick.splice(index, 1);
-            controller.events.cancelContextMenu = undefined;
-
-            index = events.eventHandlers.mouseClick.indexOf(controller.events.rename);
-            events.eventHandlers.mouseClick.splice(index, 1);
-            index = events.eventHandlers.mouseClick.indexOf(controller.events.create);
-            events.eventHandlers.mouseClick.splice(index, 1);
-            index = events.eventHandlers.mouseClick.indexOf(controller.events.createFolder);
-            events.eventHandlers.mouseClick.splice(index, 1);
-            index = events.eventHandlers.mouseClick.indexOf(controller.events.delete);
-            events.eventHandlers.mouseClick.splice(index, 1);
-        },
-        expandFolder: function (e) {
-            if (e.button !== 0) {
-                return false;
-            }
-            var target = e.target;
-            var id = target.getAttribute('file-entry-expand-button');
-            if (!id) {
-                return false;
-            }
-
-            id = parseInt(id);
-
-            var sw = target;
-            while (!sw.getAttribute('subwindow')) {
-                sw = sw.parentElement;
-            }
-            sw = sw.getAttribute('subwindow');
-            sw = parseInt(sw);
-            var sws = require('../Layout/controller');
-            sw = sws.viewToModelMap[sw];
-
-            var expanded = sw.contentController.expanded[id];
-            sw.contentController.expanded[id] = !expanded;
-            sw.contentController.render();
-        },
         dragToComponent: function (e) {
             if (e.button !== 0) {
                 return false;
@@ -371,28 +56,17 @@ var controller = {
             events.eventHandlers.mouseUp.unshift(drop);
 
             return true;
-        },
-        registerEvents: function () {
-            if (controller.events.registered) {
-                return;
-            }
-            controller.events.registered = true;
-            var events = require('../events');
-            events.eventHandlers.contextMenu.push(controller.events.onContextMenu);
-            events.eventHandlers.mouseClick.push(controller.events.expandFolder);
-            events.eventHandlers.mouseDown.push(controller.events.dragToComponent);
         }
     },
     create: function () {
-        
-        controller.events.registerEvents();
-
         var ctrl = {
             eventPool: undefined,
+            stateContext: {},
             state: undefined,
             states: {
                 def: {
                     enterState: function() {
+                        ctrl.render();
                         ctrl.eventPool.handlers = [];
                         ctrl.eventPool.handlers.push({
                             priority: 0,
@@ -423,15 +97,326 @@ var controller = {
                                 return true;
                             },
                         });
+
+                        ctrl.eventPool.handlers.push({
+                            priority: 0,
+                            handle: function (e) {
+                                if (e.type !== 'click') {
+                                    return false;
+                                }
+
+                                if (e.button !== 0) {
+                                    return false;
+                                }
+                                var target = e.target;
+                                var id = target.getAttribute('file-entry-expand-button');
+                                if (!id) {
+                                    return false;
+                                }
+                    
+                                id = parseInt(id);
+                                ctrl.expanded[id] = !ctrl.expanded[id];
+                                ctrl.render();
+                            },
+                        });
                     },
                     exitState: function() {},
                 },
                 modal: {
                     enterState: function() {
                         ctrl.eventPool.handlers = [];
+
+                        ctrl.eventPool.handlers.push({
+                            priority: 0,
+                            handle: function (e) {
+                                if (e.type !== 'click') {
+                                    return false;
+                                }
+
+                                if (e.button !== 0) {
+                                    return false;
+                                }
+                    
+                                var target = e.target;
+                                var menuItem = target.getAttribute('project-context-menu');
+                                if (menuItem !== 'Create') {
+                                    return false;
+                                }
+                    
+                                var id = target.getAttribute('id');
+                                id = parseInt(id);
+                    
+                                var model = require('./model');
+                                var fileEntry = model.fileEntries[id];
+                    
+                                if (!fileEntry.isFolder()) {
+                                    ctrl.state.setState(ctrl.states.def);
+                                    return true;
+                                }
+                    
+                                var fs = require('fs');
+                                var newPath = fileEntry.path + '\\NewFile';
+                                if (fs.existsSync(model.getProjectFolder() + newPath)) {
+                                    var index = 0;
+                    
+                                    while (fs.existsSync(model.getProjectFolder() + newPath + index)) {
+                                        ++index;
+                                    }
+                                    newPath += index;
+                                }
+                    
+                                fs.writeFile(model.getProjectFolder() + newPath, '', function () {
+                                    var fe = require('./fileEntry');
+                                    fe.create(newPath);
+                                    model.flush();
+
+                                    ctrl.state.setState(ctrl.states.def);
+                                });
+                    
+                                return true;
+                            },
+                        });
+
+                        ctrl.eventPool.handlers.push({
+                            priority: 0,
+                            handle: function (e) {
+                                if (e.type !== 'click') {
+                                    return false;
+                                }
+
+                                if (e.button !== 0) {
+                                    return false;
+                                }
+                    
+                                var target = e.target;
+                                var menuItem = target.getAttribute('project-context-menu');
+                                if (menuItem !== 'CreateFolder') {
+                                    return false;
+                                }
+                    
+                                var id = target.getAttribute('id');
+                                id = parseInt(id);
+                    
+                                var model = require('./model');
+                                var fileEntry = model.fileEntries[id];
+                    
+                                if (!fileEntry.isFolder()) {
+                                    ctrl.state.setState(ctrl.states.def);
+                                    return true;
+                                }
+                    
+                                var fs = require('fs');
+                                var newPath = fileEntry.path + '\\NewFolder';
+                                if (fs.existsSync(model.getProjectFolder() + newPath)) {
+                                    var index = 0;
+                    
+                                    while (fs.existsSync(model.getProjectFolder() + newPath + index)) {
+                                        ++index;
+                                    }
+                                    newPath += index;
+                                }
+                    
+                                fs.mkdir(model.getProjectFolder() + newPath, function () {
+                                    var fe = require('./fileEntry');
+                                    fe.create(newPath);
+                                    model.flush();
+
+                                    ctrl.state.setState(ctrl.states.def);
+                                });
+                    
+                                return true;
+                            }
+                        });
+
+                        ctrl.eventPool.handlers.push({
+                            priority: 0,
+                            handle: function (e) {
+                                if (e.type !== 'click') {
+                                    return false;
+                                }
+
+                                if (e.button !== 0) {
+                                    return false;
+                                }
+                    
+                                var target = e.target;
+                                var menuItem = target.getAttribute('project-context-menu');
+                                if (menuItem !== 'Delete') {
+                                    return false;
+                                }
+                    
+                                console.log('delete', e);
+                    
+                                var id = target.getAttribute('id');
+                                id = parseInt(id);
+                    
+                                var model = require('./model');
+                                var fileEntry = model.fileEntries[id];
+                    
+                                if (model.getAssetsFolder() === fileEntry.path) {
+                                    ctrl.state.setState(ctrl.states.def);
+                                    return true;
+                                }
+                                var files = [];
+                    
+                                function remove(fe, flush) {
+                                    var model = require('./model');
+                    
+                                    if (fe.children) {
+                                        for (var i = 0; i < fe.children.length; ++i) {
+                                            remove(model.fileEntries[fe.children[i]], false);
+                                        }
+                                    }
+                    
+                                    var parent = model.fileEntries[fe.parent];
+                                    var index = parent.children.indexOf(fe.id);
+                                    parent.children.splice(index, 1);
+                                    
+                                    delete model.fileEntries[fe.id];
+                                    files.push(fe.path);
+                    
+                                    if (flush) {
+                                        model.flush();
+                                    }
+                                }
+                    
+                                remove(fileEntry, true);
+                    
+                                var utils = require('../utils');
+                    
+                                for (var i = 0; i < files.length; ++i) {
+                                    files[i] = model.getProjectFolder() + files[i];
+                                }
+                                utils.removeFiles(files);
+                    
+                                ctrl.state.setState(ctrl.states.def);
+                                return true;
+                            },
+                        });
+
+                        ctrl.eventPool.handlers.push({
+                            priority: 0,
+                            handle: function (e) {
+                                if (e.type !== 'click') {
+                                    return false;
+                                }
+
+                                if (e.button !== 0) {
+                                    return false;
+                                }
+                    
+                                var target = e.target;
+                                var menuItem = target.getAttribute('project-context-menu');
+                                if (menuItem !== 'Rename') {
+                                    return false;
+                                }
+                    
+                                var id = target.getAttribute('id');
+                                id = parseInt(id);
+                    
+                                var model = require('./model');
+                                var fileEntry = model.fileEntries[id];
+                    
+                                var elem = target;
+                                while (!elem.getAttribute('file-entry')) {
+                                    elem = elem.parentElement;
+                                }
+                                
+                                ctrl.stateContext.renaming = { elem: elem, fileEntry: fileEntry };
+                                ctrl.state.setState(ctrl.states.renaming);
+
+                                return true;
+                            }
+                        });
+
+                        ctrl.eventPool.handlers.push({
+                            priority: 10,
+                            handle: function(e) {
+                                if (e.type === 'keypress') {
+                                    return false;
+                                }
+                                if (e.type === 'mousemove') {
+                                    return false;
+                                }
+                                var target = e.target;
+                                var menuItem = target.getAttribute('project-context-menu');
+                                if (!menuItem) {
+                                    ctrl.state.setState(ctrl.states.def);
+                                    return true;
+                                }
+                                return false;
+                            }
+                        });
                     },
                     exitState: function() {},
                 },
+                renaming: {
+                    enterState() {
+                        ctrl.eventPool.handlers = [];
+
+                        var elem = ctrl.stateContext.renaming.elem;
+                        var fileEntry = ctrl.stateContext.renaming.fileEntry;
+
+                        while (elem.firstChild) {
+                            elem.removeChild(elem.firstChild);
+                        }
+            
+                        var ejs = require('ejs');
+                        var html = ejs.render(views[renameInput], { fileEntry: fileEntry });
+            
+                        elem.innerHTML = html;
+                        var input = elem.querySelector('[rename-file-object]');
+                        input.value = fileEntry.getName();
+                        
+                        ctrl.eventPool.handlers.push({
+                            priority: 0,
+                            handle: function(e) {
+                                if (e.type !== 'keypress') {
+                                    return false;
+                                }
+                                if (e.key !== 'Enter' || input.value === '') {
+                                    return false;
+                                }
+
+                                var model = require('./model');
+                                var dir = model.fileEntries[fileEntry.parent];
+
+                                var fs = require('fs');
+                                var newPath = dir.path + '\\' + input.value;
+                
+                                fs.exists(model.getProjectFolder() + newPath, function (res) { 
+                                    if (!res) {
+                                        fs.rename(model.getProjectFolder() + fileEntry.path, model.getProjectFolder() + newPath, function (err) {
+                                            if (!err) {
+                                                fileEntry.path = newPath;
+                
+                                                function repairPaths(fileEntry) {
+                                                    fileEntry.path = model.fileEntries[fileEntry.parent].path + '\\' + fileEntry.getName();
+                                                    if (!fileEntry.children) {
+                                                        return;
+                                                    }
+                                                    for (var i = 0; i < fileEntry.children.length; ++i) {
+                                                        repairPaths(model.fileEntries[fileEntry.children[i]]);
+                                                    }
+                                                }
+                
+                                                repairPaths(fileEntry);
+                
+                                                model.flush();
+                                            }
+                                            ctrl.state.setState(ctrl.states.def);
+                                        });
+                                    } else {
+                                        ctrl.state.setState(ctrl.states.def);
+                                    }
+                                });
+
+                                return true;
+                            }
+                        });
+                    },
+                    exitState() {},
+                }
             },
             init: function(callback) {
                 var eventPool = require('../EventHandling/eventPool');
