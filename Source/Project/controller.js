@@ -436,7 +436,18 @@ var controller = {
         controller.events.registerEvents();
 
         var ctrl = {
+            eventPool: undefined,
+            state: undefined,
+            states: {
+                def: {
+                    enterState: function() {},
+                    exitState: function() {},
+                }
+            },
             init: function(callback) {
+                var eventPool = require('../EventHandling/eventPool');
+                ctrl.eventPool = eventPool.create();
+
                 function cb() {
                     var fe = require('./fileEntry');
                     fe.init(function () {
@@ -454,6 +465,10 @@ var controller = {
                     return;
                 }
                 callback();
+
+                var state = require('../State/state');
+                ctrl.state = state.create();
+                ctrl.state.setState(ctrl.states.def);
             },
             expanded: {},
             render: function () {
