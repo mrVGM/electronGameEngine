@@ -296,54 +296,6 @@ var controller = {
             index = events.eventHandlers.mouseClick.indexOf(controller.events.delete);
             events.eventHandlers.mouseClick.splice(index, 1);
         },
-        onContextMenu: function (e) {
-            var target = e.target;
-            var fileEntry = target.getAttribute('file-entry');
-            if (!fileEntry)
-                return false;
-
-            fileEntry = parseInt(fileEntry);
-
-            var model = require('./model');
-            fileEntry = model.fileEntries[fileEntry];
-
-            var ejs = require('ejs');
-            var html = ejs.render(views[contextMenuView], { fileEntry: fileEntry });
-
-            var contextPlace = target.querySelector('[context-menu-place]');
-            contextPlace.innerHTML = html;
-            contextPlace.style.left = e.offsetX + 'px';
-            contextPlace.style.top = e.offsetY + 'px';
-
-            var events = require('../events');
-            controller.events.cancelContextMenu = function (e) {
-                console.log(e);
-                if (e.button !== 0) {
-                    return false;
-                }
-
-                var target = e.target;
-                if (target.getAttribute('project-context-menu')) {
-                    return false;
-                }
-                while (contextPlace.firstChild) {
-                    contextPlace.removeChild(contextPlace.firstChild);
-                }
-
-                controller.events.clearContextMenuEvents();
-
-                return true;
-            }
-
-            events.eventHandlers.mouseClick.push(controller.events.rename);
-            events.eventHandlers.mouseClick.push(controller.events.create);
-            events.eventHandlers.mouseClick.push(controller.events.createFolder);
-            events.eventHandlers.mouseClick.push(controller.events.delete);
-
-            events.eventHandlers.mouseClick.unshift(controller.events.cancelContextMenu);
-
-            return true;
-        },
         expandFolder: function (e) {
             if (e.button !== 0) {
                 return false;
@@ -440,19 +392,63 @@ var controller = {
             state: undefined,
             states: {
                 def: {
-                    enterState: function() {},
+                    enterState: function() {
+                        ctrl.eventPool.handlers = [];
+                        ctrl.eventPool.handlers.push({
+                            priority: 0,
+                            handle: function (e) {
+                                if (e.type !== 'contextmenu') {
+                                    return false;
+                                }
+
+                                var target = e.target;
+                                var fileEntry = target.getAttribute('file-entry');
+                                if (!fileEntry)
+                                    return false;
+                    
+                                fileEntry = parseInt(fileEntry);
+                    
+                                var model = require('./model');
+                                fileEntry = model.fileEntries[fileEntry];
+                    
+                                var ejs = require('ejs');
+                                var html = ejs.render(views[contextMenuView], { fileEntry: fileEntry });
+                    
+                                var contextPlace = target.querySelector('[context-menu-place]');
+                                contextPlace.innerHTML = html;
+                                contextPlace.style.left = e.offsetX + 'px';
+                                contextPlace.style.top = e.offsetY + 'px';
+
+                                ctrl.state.setState(ctrl.states.modal);
+                                return true;
+                            },
+                        });
+                    },
                     exitState: function() {},
-                }
+                },
+                modal: {
+                    enterState: function() {
+                        ctrl.eventPool.handlers = [];
+                    },
+                    exitState: function() {},
+                },
             },
             init: function(callback) {
                 var eventPool = require('../EventHandling/eventPool');
                 ctrl.eventPool = eventPool.create();
 
+                function enterDefaultState() {        
+                    var state = require('../State/state');
+                    ctrl.state = state.create();
+                    ctrl.state.setState(ctrl.states.def);
+                    callback();
+                }
+
                 function cb() {
                     var fe = require('./fileEntry');
                     fe.init(function () {
                         var model = require('./model');
-                        model.init(callback);
+                        model.init(enterDefaultState);
                     })
                 }
 
@@ -464,11 +460,7 @@ var controller = {
                     });
                     return;
                 }
-                callback();
-
-                var state = require('../State/state');
-                ctrl.state = state.create();
-                ctrl.state.setState(ctrl.states.def);
+                enterDefaultState();
             },
             expanded: {},
             render: function () {
