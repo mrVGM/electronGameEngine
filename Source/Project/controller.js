@@ -187,6 +187,33 @@ var controller = {
                                 ctrl.render();
                             },
                         });
+
+                        ctrl.eventPool.add({
+                            priority: 0,
+                            handle: function(e) {
+                                if (e.type !== 'mousedown') {
+                                    return false;
+                                }
+                                if (e.button !== 0) {
+                                    return false;
+                                }
+
+                                var target = e.target;
+                                var fileId = target.getAttribute('file-entry');
+                                if (!fileId) {
+                                    return false;
+                                }
+                    
+                                fileId = parseInt(fileId);
+                                var model = require('./model');
+                                var fe = model.fileEntries[fileId];
+
+                                ctrl.stateContext.dragging = { fileEntry: fe };
+                                ctrl.state.setState(ctrl.states.dragging);
+
+                                return true;
+                            }
+                        });
                         
                         var eventManager = require('../EventHandling/eventManager');
                         eventManager.addCustom(ctrl.states.def.dragGameObjectListener);
@@ -492,6 +519,28 @@ var controller = {
                         });
                     },
                     exitState() {},
+                },
+                dragging: {
+                    dropHandler: {
+                        priority: -1000,
+                        handle: function(e) {
+                            if (e.type !== 'mouseup') {
+                                return false;
+                            }
+                            var eventManager = require('../EventHandling/eventManager');
+                            eventManager.raiseCustomEvent({ type: 'dropFileObject' });
+                            ctrl.state.setState(ctrl.states.def);
+                        }
+                    },
+                    enterState: function() {
+                        var eventManager = require('../EventHandling/eventManager');
+                        eventManager.addGlobal(ctrl.states.dragging.dropHandler);
+                        eventManager.raiseCustomEvent({ type: 'dragFileObject', fileObject: ctrl.stateContext.dragging.fileEntry });
+                    },
+                    exitState: function() {
+                        var eventManager = require('../EventHandling/eventManager');
+                        eventManager.removeGlobal(ctrl.states.dragging.dropHandler);
+                    },
                 }
             },
             init: function(callback) {
