@@ -18,12 +18,21 @@ var eventPool = {
                 }
 
                 for (var i = 0; i < sorted.length; ++i) {
-                    var stopPropagation = sorted[i].handle(e);
-                    if (stopPropagation) {
-                        break;
-                    }
+                    sorted[i].handle(e);
                 }
-            }
+            },
+            clear: function() {
+                pool.handlers = [];
+            },
+            add: function(handler) {
+                pool.handlers.push(handler);
+            },
+            remove: function(handler) {
+                var index = pool.handlers.indexOf(handler);
+                if (index >= 0) {
+                    pool.handlers.splice(index);
+                }
+            } 
         };
         return pool;
     }

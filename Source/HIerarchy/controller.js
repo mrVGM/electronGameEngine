@@ -117,8 +117,8 @@ var controller = {
             states: {
                 def: {
                     enterState: function() {
-                        ctrl.eventPool.handlers = [];
-                        ctrl.eventPool.handlers.push({
+                        ctrl.eventPool.clear();
+                        ctrl.eventPool.add({
                             priority: 0,
                             handle: function (e) {
                                 if (e.type !== 'contextmenu') {
@@ -155,7 +155,7 @@ var controller = {
                             }
                         });
 
-                        ctrl.eventPool.handlers.push({
+                        ctrl.eventPool.add({
                             priority: 0,
                             handle: function (e) {
                                 if (e.type !== 'click') {
@@ -182,7 +182,7 @@ var controller = {
                             }
                         });
 
-                        ctrl.eventPool.handlers.push({
+                        ctrl.eventPool.add({
                             priority: 0,
                             handle: function(e) {
                                 if (e.type !== 'mousedown') {
@@ -201,8 +201,6 @@ var controller = {
                                 goID = parseInt(goID);
                                 var go = controller.viewToGameObjectsMap[goID];
 
-                                var eventManager = require('../EventHandling/eventManager');
-                                eventManager.raiseCustomEvent({type: 'dragGameObject', gameObject: go});
                                 ctrl.stateContext.dragging = { gameObject: go };
                                 ctrl.state.setState(ctrl.states.dragging);
                             }
@@ -213,18 +211,23 @@ var controller = {
                 dragging: {
                     dropHandler: undefined,
                     enterState: function() {
-                        ctrl.eventPool.handlers = [];
+                        ctrl.eventPool.clear();
                         var eventManager = require('../EventHandling/eventManager');
                         ctrl.states.dragging.dropHandler = {
-                            priority: -100,
+                            priority: -1000,
                             handle: function(e) {
                                 if (e.type !== 'mouseup') {
                                     return false;
                                 }
                                 eventManager.raiseCustomEvent({ type: 'dropGameObject' });
                                 ctrl.state.setState(ctrl.states.def);
+                                return false;
                             }
                         };
+
+                        var eventManager = require('../EventHandling/eventManager');
+                        eventManager.raiseCustomEvent({type: 'dragGameObject', gameObject: ctrl.stateContext.dragging.gameObject });
+
                         eventManager.addGlobal(ctrl.states.dragging.dropHandler);
                     },
                     exitState: function() {
@@ -235,9 +238,9 @@ var controller = {
                 },
                 modal: {
                     enterState: function() {
-                        ctrl.eventPool.handlers = [];
+                        ctrl.eventPool.clear();
 
-                        ctrl.eventPool.handlers.push({
+                        ctrl.eventPool.add({
                             priority: 0,
                             handle: function (e) {
                                 if (e.type !== 'click') {
@@ -270,7 +273,7 @@ var controller = {
                             }
                         });
                         
-                        ctrl.eventPool.handlers.push({
+                        ctrl.eventPool.add({
                             priority: 0,
                             handle: function (e) {
                                 if (e.type !== 'click') {
@@ -303,7 +306,7 @@ var controller = {
                             }
                         });
                         
-                        ctrl.eventPool.handlers.push({
+                        ctrl.eventPool.add({
                             priority: 0,
                             handle: function (e) {
                                 if (e.type !== 'click') {
@@ -337,7 +340,7 @@ var controller = {
                             }
                         });
 
-                        ctrl.eventPool.handlers.push({
+                        ctrl.eventPool.add({
                             priority: 10,
                             handle: function(e) {
                                 if (e.type === 'keypress') {
@@ -361,7 +364,7 @@ var controller = {
                 },
                 renameGO: {
                     enterState: function() {
-                        ctrl.eventPool.handlers = [];
+                        ctrl.eventPool.clear();
 
                         var go = controller.viewToGameObjectsMap[ctrl.stateContext.renaming.goId];
                         var target = ctrl.stateContext.renaming.elem;
@@ -376,7 +379,7 @@ var controller = {
                         var renameInput = target.querySelector('[rename-game-object]');
                         renameInput.value = go.name;
 
-                        ctrl.eventPool.handlers.push({
+                        ctrl.eventPool.add({
                             priority: 0,
                             handle: function(e) {
                                 if (e.type !== 'keypress') {

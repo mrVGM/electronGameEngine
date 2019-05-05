@@ -5,13 +5,10 @@ var customMessagesPool = eventPool.create();
 
 var manager = {
     addGlobal: function(handler) {
-        pool.handlers.push(handler);
+        pool.add(handler);
     },
     removeGlobal: function(handler) {
-        var index = pool.handlers.indexOf(handler);
-        if (index >= 0) {
-            pool.handlers.splice(index, 1);
-        }
+        pool.remove(handler);
     },
     handle: function(e) {
         var utils = require('../utils');
@@ -26,10 +23,10 @@ var manager = {
         if (contentController && contentController.eventPool) {
             p = eventPool.create();
             for (var i = 0; i < contentController.eventPool.handlers.length; ++i) {
-                p.handlers.push(contentController.eventPool.handlers[i]);
+                p.add(contentController.eventPool.handlers[i]);
             }
             for (var i = 0; i < pool.handlers.length; ++i) {
-                p.handlers.push(pool.handlers[i]);
+                p.add(pool.handlers[i]);
             }
         }
         
@@ -39,13 +36,10 @@ var manager = {
         customMessagesPool.handleEvent(e);
     },
     addCustom: function(handler) {
-        customMessagesPool.handlers.push(handler);
+        customMessagesPool.add(handler);
     },
     removeCustom: function(handler) {
-        var index = customMessagesPool.handlers.indexOf(handler);
-        if (index >= 0) {
-            customMessagesPool.handlers.splice(index);
-        }
+        customMessagesPool.remove(handler);
     }
 };
 

@@ -22,6 +22,7 @@ var controller = {
 
             var drop = function (e) {
                 var index = events.eventHandlers.mouseUp.indexOf(drop);
+                console.log(index);
                 events.eventHandlers.mouseUp.splice(index, 1);
 
                 var target = e.target;
@@ -65,10 +66,77 @@ var controller = {
             state: undefined,
             states: {
                 def: {
+                    dropGameObject: undefined,
+                    dragGameObjectListener: {
+                        priority: -100,
+                        handle: function(evt) {
+                            if (evt.type !== 'dragGameObject') {
+                                return false;
+                            }
+                            console.log('Game object dragged');
+                            
+                            var go = evt.gameObject;
+
+                            ctrl.states.def.dropGameObject = {
+                                priority: -100,
+                                handle: function(e) {
+                                    if (e.type !== 'mouseup') {
+                                        return false;
+                                    }
+
+                                    var target = e.target;
+                                    if (!target.getAttribute('file-entry')) {
+                                        return false;
+                                    }
+
+                                    var fileID = target.getAttribute('file-entry');
+                                    fileID = parseInt(fileID);
+                                    var projectModel = require('../Project/model');
+                                    var fe = projectModel.fileEntries[fileID];
+                                    if (fe.isFolder()) {
+                                        var prefabName = fe.path + '\\Prefab';
+                                        var fs = require('fs');
+                                        if (fs.existsSync(projectModel.getProjectFolder() + prefabName + '.prefab')) {
+                                            var index = 0;
+                                            while (fs.existsSync(projectModel.getProjectFolder() + prefabName + index + '.prefab')) {
+                                                ++index;
+                                            }
+                                            prefabName += index;
+                                        }
+                
+                                        fs.writeFile(projectModel.getProjectFolder() + prefabName + '.prefab', JSON.stringify(go.serializable()), function () {
+                                            var fe = require('../Project/fileEntry');
+                                            fe.create(prefabName + '.prefab');
+                                            projectModel.flush();
+                                            ctrl.render();
+                                        });
+                                    }
+
+                                    return true;
+                                }
+                            };
+
+                            ctrl.eventPool.add(ctrl.states.def.dropGameObject);
+
+                            return false;
+                        }
+                    },
+                    dropGameObjectListener: {
+                        priority: -100,
+                        handle: function(evt) {
+                            if (evt.type !== 'dropGameObject') {
+                                return false;
+                            }
+                            ctrl.eventPool.remove(ctrl.states.def.dropGameObject);
+                            ctrl.states.def.dropGameObject = undefined;
+                            return false;
+                        }
+                    },
                     enterState: function() {
                         ctrl.render();
-                        ctrl.eventPool.handlers = [];
-                        ctrl.eventPool.handlers.push({
+
+                        ctrl.eventPool.clear();
+                        ctrl.eventPool.add({
                             priority: 0,
                             handle: function (e) {
                                 if (e.type !== 'contextmenu') {
@@ -98,7 +166,7 @@ var controller = {
                             },
                         });
 
-                        ctrl.eventPool.handlers.push({
+                        ctrl.eventPool.add({
                             priority: 0,
                             handle: function (e) {
                                 if (e.type !== 'click') {
@@ -119,14 +187,22 @@ var controller = {
                                 ctrl.render();
                             },
                         });
+                        
+                        var eventManager = require('../EventHandling/eventManager');
+                        eventManager.addCustom(ctrl.states.def.dragGameObjectListener);
+                        eventManager.addCustom(ctrl.states.def.dropGameObjectListener);
                     },
-                    exitState: function() {},
+                    exitState: function() {
+                        var eventManager = require('../EventHandling/eventManager');
+                        eventManager.removeCustom(ctrl.states.def.dragGameObjectListener);
+                        eventManager.removeCustom(ctrl.states.def.dropGameObjectListener);
+                    },
                 },
                 modal: {
                     enterState: function() {
-                        ctrl.eventPool.handlers = [];
+                        ctrl.eventPool.clear();
 
-                        ctrl.eventPool.handlers.push({
+                        ctrl.eventPool.add({
                             priority: 0,
                             handle: function (e) {
                                 if (e.type !== 'click') {
@@ -177,7 +253,7 @@ var controller = {
                             },
                         });
 
-                        ctrl.eventPool.handlers.push({
+                        ctrl.eventPool.add({
                             priority: 0,
                             handle: function (e) {
                                 if (e.type !== 'click') {
@@ -228,7 +304,7 @@ var controller = {
                             }
                         });
 
-                        ctrl.eventPool.handlers.push({
+                        ctrl.eventPool.add({
                             priority: 0,
                             handle: function (e) {
                                 if (e.type !== 'click') {
@@ -294,7 +370,7 @@ var controller = {
                             },
                         });
 
-                        ctrl.eventPool.handlers.push({
+                        ctrl.eventPool.add({
                             priority: 0,
                             handle: function (e) {
                                 if (e.type !== 'click') {
@@ -329,7 +405,7 @@ var controller = {
                             }
                         });
 
-                        ctrl.eventPool.handlers.push({
+                        ctrl.eventPool.add({
                             priority: 10,
                             handle: function(e) {
                                 if (e.type === 'keypress') {
@@ -352,7 +428,7 @@ var controller = {
                 },
                 renaming: {
                     enterState() {
-                        ctrl.eventPool.handlers = [];
+                        ctrl.eventPool.clear();
 
                         var elem = ctrl.stateContext.renaming.elem;
                         var fileEntry = ctrl.stateContext.renaming.fileEntry;
@@ -368,7 +444,7 @@ var controller = {
                         var input = elem.querySelector('[rename-file-object]');
                         input.value = fileEntry.getName();
                         
-                        ctrl.eventPool.handlers.push({
+                        ctrl.eventPool.add({
                             priority: 0,
                             handle: function(e) {
                                 if (e.type !== 'keypress') {
