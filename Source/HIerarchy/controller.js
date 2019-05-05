@@ -181,8 +181,57 @@ var controller = {
                                 return true;
                             }
                         });
+
+                        ctrl.eventPool.handlers.push({
+                            priority: 0,
+                            handle: function(e) {
+                                if (e.type !== 'mousedown') {
+                                    return false;
+                                }
+                                if (e.button !== 0) {
+                                    return false;
+                                }
+                    
+                                var target = e.target;
+                                var goID = target.getAttribute('game-object-entry');
+                                if (!goID) {
+                                    return false;
+                                }
+                    
+                                goID = parseInt(goID);
+                                var go = controller.viewToGameObjectsMap[goID];
+
+                                var eventManager = require('../EventHandling/eventManager');
+                                eventManager.raiseCustomEvent({type: 'dragGameObject', gameObject: go});
+                                ctrl.stateContext.dragging = { gameObject: go };
+                                ctrl.state.setState(ctrl.states.dragging);
+                            }
+                        });
                     },
                     exitState: function() {}
+                },
+                dragging: {
+                    dropHandler: undefined,
+                    enterState: function() {
+                        ctrl.eventPool.handlers = [];
+                        var eventManager = require('../EventHandling/eventManager');
+                        ctrl.states.dragging.dropHandler = {
+                            priority: -100,
+                            handle: function(e) {
+                                if (e.type !== 'mouseup') {
+                                    return false;
+                                }
+                                eventManager.raiseCustomEvent({ type: 'dropGameObject' });
+                                ctrl.state.setState(ctrl.states.def);
+                            }
+                        };
+                        eventManager.addGlobal(ctrl.states.dragging.dropHandler);
+                    },
+                    exitState: function() {
+                        var eventManager = require('../EventHandling/eventManager');
+                        eventManager.removeGlobal(ctrl.states.dragging.dropHandler);
+                        ctrl.states.dragging.dropHandler = undefined;
+                    }
                 },
                 modal: {
                     enterState: function() {
