@@ -5,28 +5,24 @@ var viewsFilenames = [frameView, componentView];
 var views = undefined;
 
 var inspector = {
+    init: function(callback) {
+        if (!views) {
+            var utils = require('../utils');
+            utils.readFiles(viewsDir, viewsFilenames, function (res) {
+                views = res;
+                callback();
+            });
+            return;
+        }
+        callback();
+    },
     create: function (selected) {
         var insp = {
             selected: selected,
-            init: function (callback) {
-                if (!views) {
-                    var utils = require('../utils');
-                    utils.readFiles(viewsDir, viewsFilenames, function (res) {
-                        views = res;
-                        insp.init(callback);
-                    });
-                    return;
-                }
-                var params = require('../API/params');
-                params.init(callback);
-            },
-            render: function (callback, controller) {
-                function rend() {
-                    var ejs = require('ejs');
-                    var html = ejs.render(views[frameView], { insp: insp });
-                    callback(html);
-                }
-                insp.init(rend);
+            render: function () {
+                var ejs = require('ejs');
+                var html = ejs.render(views[frameView], { insp: insp });
+                return html;
             },
             renderComponent: function (componentIndex) {
                 var paramsAPI = require('../API/params');

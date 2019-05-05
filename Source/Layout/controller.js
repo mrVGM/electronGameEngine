@@ -239,7 +239,9 @@ var controller = {
                     var inspectorController = require('../Inspector/controller');
                     sw.contentController = inspectorController.create();
                     sw.contentController.subwindowId = id;
-                    sw.contentController.render();
+                    sw.contentController.init(function() {
+                        sw.contentController.render();
+                    });
                     return true;
                 }
 

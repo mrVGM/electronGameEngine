@@ -41,7 +41,21 @@ var controller = {
     create: function () {
         controller.events.registerEvents();
         var ctrl = {
+            eventPool: undefined,
             currentInspector: undefined,
+            init: function(callback) {
+                var eventPool = require('../EventHandling/eventPool');
+                ctrl.eventPool = eventPool.create();
+                function initParams() {
+                    var params = require('../API/params');
+                    params.init(callback);
+                }
+                function initInsp() {
+                    var insp = require('./gameObjectInspector');
+                    insp.init(initParams);
+                }
+                initInsp();
+            },
             render: function () {
                 var init = require('../init');
                 var rootElement = init.parent;
@@ -67,22 +81,20 @@ var controller = {
                     var insp = require('./gameObjectInspector');
                     ctrl.currentInspector = insp.create(controller.selected);
                 }
-                ctrl.currentInspector.render(function (html) {
-                    wnd.innerHTML = html;
+                wnd.innerHTML = ctrl.currentInspector.render();
 
-                    var inspectorWindow = wnd.querySelector('[inspector-window]');
-                    if (!inspectorWindow) {
+                var inspectorWindow = wnd.querySelector('[inspector-window]');
+                if (!inspectorWindow) {
+                    return;
+                }
+
+                inspectorWindow.addEventListener('change', function (e) {
+                    var target = e.target;
+                    if (!target.getAttribute('component-param-path')) {
                         return;
                     }
-
-                    inspectorWindow.addEventListener('change', function (e) {
-                        var target = e.target;
-                        if (!target.getAttribute('component-param-path')) {
-                            return;
-                        }
-                        var params = require('../API/params');
-                        params.syncValue(target);
-                    });
+                    var params = require('../API/params');
+                    params.syncValue(target);
                 });
             },
         };
