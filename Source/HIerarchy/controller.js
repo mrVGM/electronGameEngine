@@ -39,6 +39,47 @@ var controller = {
             state: st.create(),
             states: {
                 def: {
+                    dropFileObject: undefined,
+                    dragFileObjectListener: {
+                        priority: 0,
+                        handle: function(evt) {
+                            if (evt.type !== 'dragFileObject') {
+                                return false;
+                            }
+
+                            var fe = evt.fileObject;
+                            ctrl.states.def.dropFileObject = {
+                                priority: 0,
+                                handle: function(e) {
+                                    if (e.type !== 'mouseup') {
+                                        return false;
+                                    }
+                                    var target = e.target;
+                                    if (!target.getAttribute('subwindow')) {
+                                        return false;
+                                    }
+                                    console.log('Opening prefab', fe);
+                                    return true;
+                                }
+                            };
+
+                            ctrl.eventPool.add(ctrl.states.def.dropFileObject);
+
+                            return true;
+                        }
+                    },
+                    dropFileObjectListener: {
+                        priority: 0,
+                        handle: function(e) {
+                            if (e.type !== 'dropFileObject') {
+                                return false;
+                            }
+
+                            ctrl.eventPool.remove(ctrl.states.def.dropFileObject);
+                            ctrl.states.def.dropFileObject = undefined;
+                        }
+                    },
+
                     enterState: function() {
                         ctrl.eventPool.clear();
                         ctrl.eventPool.add({
@@ -150,8 +191,16 @@ var controller = {
                                 return true;
                             }
                         });
+
+                        var eventManager = require('../EventHandling/eventManager');
+                        eventManager.addCustom(ctrl.states.def.dragFileObjectListener);
+                        eventManager.addCustom(ctrl.states.def.dropFileObjectListener);
                     },
-                    exitState: function() {}
+                    exitState: function() {
+                        var eventManager = require('../EventHandling/eventManager');
+                        eventManager.removeCustom(ctrl.states.def.dragFileObjectListener);
+                        eventManager.removeCustom(ctrl.states.def.dropFileObjectListener);
+                    }
                 },
                 dragging: {
                     dropHandler: undefined,
