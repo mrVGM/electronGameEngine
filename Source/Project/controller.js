@@ -5,60 +5,6 @@ var viewsFiles = [contextMenuView, renameInput];
 var viewsDir = __dirname + '\\Views\\';
 
 var controller = {
-    events: {
-        dragToComponent: function (e) {
-            if (e.button !== 0) {
-                return false;
-            }
-            var target = e.target;
-            var fileId = target.getAttribute('file-entry');
-            if (!fileId) {
-                return false;
-            }
-
-            fileId = parseInt(fileId);
-
-            var events = require('../events');
-
-            var drop = function (e) {
-                var index = events.eventHandlers.mouseUp.indexOf(drop);
-                console.log(index);
-                events.eventHandlers.mouseUp.splice(index, 1);
-
-                var target = e.target;
-                if (target.getAttribute('add-script-place')) {
-
-                    var utils = require('../utils');
-                    var sw = utils.findSubWindow(target);
-                    var contentController = sw.contentController;
-
-                    var model = require('./model');
-                    var fileEntry = model.fileEntries[fileId];
-                    var script = require(model.getProjectFolder() + fileEntry.path);
-
-                    contentController.currentInspector.selected.components.push({ script: fileId, instance: script.createInstance() });
-                    contentController.render();
-                    return true;
-                }
-                if (target.getAttribute('file-object-param')) {
-                    var params = require('../API/params');
-                    var param = params.findParam(target);
-                    param.value = fileId;
-
-                    var utils = require('../utils');
-                    var sw = utils.findSubWindow(target);
-                    var contentController = sw.contentController;
-                    contentController.render();
-                    return true;
-                }
-                return true;
-            }
-            
-            events.eventHandlers.mouseUp.unshift(drop);
-
-            return true;
-        }
-    },
     create: function () {
         var ctrl = {
             eventPool: undefined,

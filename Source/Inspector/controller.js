@@ -1,45 +1,5 @@
 var controller = {
-    selected: undefined,
-    events: {
-        registered: false,
-        select: function (e) {
-            var target = e.target;
-            var gameObject = target.getAttribute('game-object-entry');
-            if (gameObject) {
-                var id = parseInt(gameObject);
-                var hierarchy = require('../HIerarchy/controller');
-                var go = hierarchy.viewToGameObjectsMap[id];
-                controller.selected = go;
-                var init = require('../init');
-                var sws = init.parent.querySelectorAll('[subwindow]');
-                var swController = require('../Layout/controller');
-
-                for (var i = 0; i < sws.length; ++i) {
-                    var curElem = sws[i].getAttribute('subwindow');
-                    curElem = parseInt(curElem);
-                    var sw = swController.viewToModelMap[curElem];
-
-                    if (sw.windowType === 'inspector') {
-                        sw.contentController.currentInspector = undefined;
-                        sw.contentController.render();
-                    }
-                }
-                return true;
-            }
-            return false;
-        },
-        registerEvents: function () {
-            if (controller.events.registered) {
-                return;
-            }
-            controller.events.registered = true;
-
-            var events = require('../events');
-            events.eventHandlers.mouseClick.push(controller.events.select);
-        }
-    },
     create: function () {
-        controller.events.registerEvents();
         var ctrl = {
             eventPool: undefined,
             currentInspector: undefined,
@@ -57,13 +17,67 @@ var controller = {
                             ctrl.render();
                         }
                     },
+                    dropFileObject: undefined,
+                    dragFileObjectListener: {
+                        priority: 0,
+                        handle: function(evt) {
+                            if (evt.type !== 'dragFileObject') {
+                                return;
+                            }
+                            var fileEntry = evt.fileObject;
+
+                            ctrl.states.def.dropFileObject = {
+                                priority: 0,
+                                handle: function (e) {
+                                    if (e.type !== 'mouseup') {
+                                        return false;
+                                    }
+                                    var target = e.target;
+                                    if (target.getAttribute('add-script-place')) {
+                                        var model = require('../Project/model');
+                                        var script = require(model.getProjectFolder() + fileEntry.path);
+                    
+                                        ctrl.currentInspector.selected.components.push({ script: fileEntry.id, instance: script.createInstance() });
+                                        ctrl.render();
+                                        return true;
+                                    }
+
+                                    if (target.getAttribute('file-object-param')) {
+                                        var params = require('../API/params');
+                                        var param = params.findParam(target);
+                                        param.value = fileEntry.id;
+                                        ctrl.render();
+                                        return true;
+                                    }
+                                    
+                                    return false;
+                                }
+                            }
+
+                            ctrl.eventPool.add(ctrl.states.def.dropFileObject);
+                        }
+                    },
+                    dropFileObjectListener: {
+                        priority: 0,
+                        handle: function(e) {
+                            if (e.type !== 'dropFileObject') {
+                                return false;
+                            }
+                            ctrl.eventPool.remove(ctrl.states.def.dropFileObject);
+                            ctrl.states.def.dropFileObject = undefined;
+                        }
+                    },
                     enterState: function() {
                         var eventManager = require('../EventHandling/eventManager');
                         eventManager.addCustom(ctrl.states.def.selectGOListener);
+                        eventManager.addCustom(ctrl.states.def.dragFileObjectListener);
+                        eventManager.addCustom(ctrl.states.def.dropFileObjectListener);
                     },
                     exitState: function() {
                         var eventManager = require('../EventHandling/eventManager');
                         eventManager.removeCustom(ctrl.states.def.selectGOListener);
+                        eventManager.removeCustom(ctrl.states.def.dragFileObjectListener);
+                        eventManager.removeCustom(ctrl.states.def.dropFileObjectListener);
                     },
                 },
             },
