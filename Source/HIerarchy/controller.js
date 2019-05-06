@@ -205,6 +205,29 @@ var controller = {
                                 ctrl.state.setState(ctrl.states.dragging);
                             }
                         });
+
+                        ctrl.eventPool.add({
+                            priority: 0,
+                            handle: function(e) {
+                                if (e.type !== 'click') {
+                                    return false;
+                                }
+                                if (e.button !== 0) {
+                                    return false;
+                                }
+                                var target = e.target;
+                                var goID = target.getAttribute('game-object-entry');
+                                if (!goID) {
+                                    return false;
+                                }
+                                goID = parseInt(goID);
+                                var go = controller.viewToGameObjectsMap[goID];
+
+                                var eventManager  = require('../EventHandling/eventManager');
+                                eventManager.raiseCustomEvent({ type: 'gameObjectSelect', gameObject: go });
+                                return true;
+                            }
+                        });
                     },
                     exitState: function() {}
                 },

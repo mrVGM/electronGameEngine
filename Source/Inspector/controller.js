@@ -43,6 +43,30 @@ var controller = {
         var ctrl = {
             eventPool: undefined,
             currentInspector: undefined,
+            state: undefined,
+            states: {
+                def: {
+                    selectGOListener: {
+                        priority: -100,
+                        handle: function(e) {
+                            if (e.type !== 'gameObjectSelect') {
+                                return false;
+                            }
+                            var insp = require('./gameObjectInspector');
+                            ctrl.currentInspector = insp.create(e.gameObject);
+                            ctrl.render();
+                        }
+                    },
+                    enterState: function() {
+                        var eventManager = require('../EventHandling/eventManager');
+                        eventManager.addCustom(ctrl.states.def.selectGOListener);
+                    },
+                    exitState: function() {
+                        var eventManager = require('../EventHandling/eventManager');
+                        eventManager.removeCustom(ctrl.states.def.selectGOListener);
+                    },
+                },
+            },
             init: function(callback) {
                 var eventPool = require('../EventHandling/eventPool');
                 ctrl.eventPool = eventPool.create();
@@ -55,6 +79,11 @@ var controller = {
                     insp.init(initParams);
                 }
                 initInsp();
+
+                var state = require('../State/state');
+                ctrl.state = state.create();
+
+                ctrl.state = ctrl.state.setState(ctrl.states.def);
             },
             render: function () {
                 var init = require('../init');
