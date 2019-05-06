@@ -49,7 +49,7 @@ var controller = {
                                         ctrl.render();
                                         return true;
                                     }
-                                    
+
                                     return false;
                                 }
                             }
@@ -67,17 +67,67 @@ var controller = {
                             ctrl.states.def.dropFileObject = undefined;
                         }
                     },
+                    dropGameObject: undefined,
+                    dragGameObjectListener: {
+                        priority: 0,
+                        handle: function(evt) {
+                            if (evt.type !== 'dragGameObject') {
+                                return false;
+                            }
+
+                            var go = evt.gameObject;
+
+                            ctrl.states.def.dropGameObject = {
+                                priority: 0,
+                                handle: function(e) {
+                                    if (e.type !== 'mouseup') {
+                                        return false;
+                                    }
+
+                                    var target = e.target;
+
+                                    if (target.getAttribute('game-object-param')) {
+                                        var params = require('../API/params');
+                                        var param = params.findParam(target);
+                                        param.value = go.id;
+
+                                        ctrl.render();
+                                        return true;
+                                    }
+                                    return false;
+                                }
+                            };
+
+                            ctrl.eventPool.add(ctrl.states.def.dropGameObject);
+                        }
+                    },
+                    dropGameObjectListener: {
+                        priority: 0,
+                        handle: function(e) {
+                            if (e.type !== 'dropGameObject') {
+                                return false;
+                            }
+                            ctrl.eventPool.remove(ctrl.states.def.dropGameObject)
+                            ctrl.states.def.gameObject = undefined;
+                        }
+                    },
                     enterState: function() {
                         var eventManager = require('../EventHandling/eventManager');
                         eventManager.addCustom(ctrl.states.def.selectGOListener);
                         eventManager.addCustom(ctrl.states.def.dragFileObjectListener);
                         eventManager.addCustom(ctrl.states.def.dropFileObjectListener);
+
+                        eventManager.addCustom(ctrl.states.def.dragGameObjectListener);
+                        eventManager.addCustom(ctrl.states.def.dropGameObjectListener);
                     },
                     exitState: function() {
                         var eventManager = require('../EventHandling/eventManager');
                         eventManager.removeCustom(ctrl.states.def.selectGOListener);
                         eventManager.removeCustom(ctrl.states.def.dragFileObjectListener);
                         eventManager.removeCustom(ctrl.states.def.dropFileObjectListener);
+
+                        eventManager.removeCustom(ctrl.states.def.dragGameObjectListener);
+                        eventManager.removeCustom(ctrl.states.def.dropGameObjectListener);
                     },
                 },
             },
