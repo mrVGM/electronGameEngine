@@ -4,7 +4,6 @@ var viewNames = [gmView];
 var viewsDir = __dirname + '\\Views\\';
 
 var gameObject = {
-    idCount: 0,
     init: function(callback) {
         if (views) {
             callback();
@@ -44,8 +43,9 @@ var gameObject = {
         }
     },
     create: function () {
+        var moment = require('moment');
         var gm = {
-            id: gameObject.idCount++,
+            id: moment.now(),
             name: 'GameObject',
             children: [],
             components: [],
