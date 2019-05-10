@@ -57,32 +57,53 @@ var controller = {
                                         return false;
                                     }
                                     var target = e.target;
-                                    if (!target.getAttribute('subwindow')) {
-                                        return false;
+
+                                    function fillViewToObjectsMap(go) {
+                                        controller.viewToGameObjectsMap[go.id] = go;
+                                        for (var i = 0; i < go.children.length; ++i) {
+                                            fillViewToObjectsMap(go.children[i]);
+                                        }
                                     }
 
-                                    var fs = require('fs');
-                                    var projectModel = require('../Project/model');
-                                    fs.readFile(projectModel.getProjectFolder() + fe.path, function(err, data) {
-                                        data = data.toString();
-                                        var go = JSON.parse(data);
-                                        var gameObject = require('./gameObject');
-                                        gameObject.deserialize(go);
-                                        controller.viewToGameObjectsMap = {};
-                                        var model = require('./model');
-                                        model.root = go;
+                                    if (target.getAttribute('subwindow')) {
+                                        var fs = require('fs');
+                                        var projectModel = require('../Project/model');
+                                        fs.readFile(projectModel.getProjectFolder() + fe.path, function(err, data) {
+                                            data = data.toString();
+                                            var go = JSON.parse(data);
+                                            var gameObject = require('./gameObject');
+                                            gameObject.deserialize(go);
+                                            controller.viewToGameObjectsMap = {};
+                                            var model = require('./model');
+                                            model.root = go;
 
-                                        function fillViewToObjectsMap(go) {
-                                            controller.viewToGameObjectsMap[go.id] = go;
-                                            for (var i = 0; i < go.children.length; ++i) {
-                                                fillViewToObjectsMap(go.children[i]);
-                                            }
-                                        }
+                                            fillViewToObjectsMap(model.root);
 
-                                        fillViewToObjectsMap(model.root);
+                                            controller.refresh();
+                                        });
+                                        return true;
+                                    }
 
-                                        controller.refresh();
-                                    });
+                                    var goId = target.getAttribute('game-object-entry');
+                                    if (goId) {
+                                        goId = parseInt(goId);
+                                        var gameObjectFromHierarchy = controller.viewToGameObjectsMap[goId];
+                                        
+                                        var fs = require('fs');
+                                        var projectModel = require('../Project/model');
+                                        fs.readFile(projectModel.getProjectFolder() + fe.path, function(err, data) {
+                                            data = data.toString();
+                                            var go = JSON.parse(data);
+                                            var gameObject = require('./gameObject');
+                                            gameObject.deserialize(go);
+
+                                            fillViewToObjectsMap(go);
+                                            
+                                            gameObjectFromHierarchy.children.push(go);
+
+                                            controller.refresh();
+                                        });
+                                    }
 
                                     return true;
                                 }
