@@ -39,7 +39,7 @@ var gameObject = {
                 }
                 return res;
             }
-            return serialize(gm);
+            return serialize(go);
         }
     },
     create: function () {

@@ -68,14 +68,22 @@ var controller = {
                                         var go = JSON.parse(data);
                                         var gameObject = require('./gameObject');
                                         gameObject.deserialize(go);
-                                        ctrl.viewToModelMap = {};
+                                        controller.viewToGameObjectsMap = {};
                                         var model = require('./model');
                                         model.root = go;
+
+                                        function fillViewToObjectsMap(go) {
+                                            controller.viewToGameObjectsMap[go.id] = go;
+                                            for (var i = 0; i < go.children.length; ++i) {
+                                                fillViewToObjectsMap(go.children[i]);
+                                            }
+                                        }
+
+                                        fillViewToObjectsMap(model.root);
 
                                         controller.refresh();
                                     });
 
-                                    console.log('Opening prefab', fe);
                                     return true;
                                 }
                             };
@@ -207,6 +215,7 @@ var controller = {
 
                                 var eventManager  = require('../EventHandling/eventManager');
                                 eventManager.raiseCustomEvent({ type: 'gameObjectSelect', gameObject: go });
+
                                 return true;
                             }
                         });
