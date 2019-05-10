@@ -28,9 +28,11 @@ var eventPool = {
                 pool.handlers.push(handler);
             },
             remove: function(handler) {
-                var index = pool.handlers.indexOf(handler);
-                if (index >= 0) {
-                    pool.handlers.splice(index);
+                for (var i = 0; i < pool.handlers.length; ++i) {
+                    if (pool.handlers[i].id === handler.id) {
+                        pool.handlers.splice(i, 1);
+                        return;
+                    }
                 }
             } 
         };

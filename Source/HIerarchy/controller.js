@@ -31,6 +31,8 @@ var controller = {
 
         var st = require('../State/state');
 
+        var guid = require('../EventHandling/guidGen');
+
         var ctrl = {
             subwindowId: undefined,
             expandedMap: {},
@@ -58,6 +60,21 @@ var controller = {
                                     if (!target.getAttribute('subwindow')) {
                                         return false;
                                     }
+
+                                    var fs = require('fs');
+                                    var projectModel = require('../Project/model');
+                                    fs.readFile(projectModel.getProjectFolder() + fe.path, function(err, data) {
+                                        data = data.toString();
+                                        var go = JSON.parse(data);
+                                        var gameObject = require('./gameObject');
+                                        gameObject.deserialize(go);
+                                        ctrl.viewToModelMap = {};
+                                        var model = require('./model');
+                                        model.root = go;
+
+                                        controller.refresh();
+                                    });
+
                                     console.log('Opening prefab', fe);
                                     return true;
                                 }
@@ -66,7 +83,8 @@ var controller = {
                             ctrl.eventPool.add(ctrl.states.def.dropFileObject);
 
                             return true;
-                        }
+                        },
+                        id: guid.generateId(),
                     },
                     dropFileObjectListener: {
                         priority: 0,
@@ -77,7 +95,8 @@ var controller = {
 
                             ctrl.eventPool.remove(ctrl.states.def.dropFileObject);
                             ctrl.states.def.dropFileObject = undefined;
-                        }
+                        },
+                        id: guid.generateId()
                     },
 
                     enterState: function() {
@@ -216,7 +235,8 @@ var controller = {
                                 eventManager.raiseCustomEvent({ type: 'dropGameObject' });
                                 ctrl.state.setState(ctrl.states.def);
                                 return false;
-                            }
+                            },
+                            id: guid.generateId(),
                         };
 
                         var eventManager = require('../EventHandling/eventManager');
@@ -228,7 +248,7 @@ var controller = {
                         var eventManager = require('../EventHandling/eventManager');
                         eventManager.removeGlobal(ctrl.states.dragging.dropHandler);
                         ctrl.states.dragging.dropHandler = undefined;
-                    }
+                    },
                 },
                 modal: {
                     enterState: function() {
@@ -393,6 +413,10 @@ var controller = {
                     exitState() {
                     }
                 },
+                disabled: {
+                    enterState: function() {},
+                    exitState: function() {}
+                },
             },
             isExpanded: function (id) {
                 if(ctrl.expandedMap[id]) {
@@ -462,6 +486,9 @@ var controller = {
             getRoot: function () {
                 var model = require('./model');
                 return model.root;
+            },
+            disable: function() {
+                ctrl.state.setState(ctrl.states.disabled);
             }
         };
         return ctrl;

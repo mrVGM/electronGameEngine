@@ -53,14 +53,14 @@ var gameObject = {
         gameObject.attachEditorMethods(gm);
         return gm;
     },
-    deserialize: function(gameObject) {
+    deserialize: function(obj) {
         function process(go) {
             gameObject.attachEditorMethods(go);
             for (var i = 0; i < go.children.length; ++i) {
                 process(go.children[i]);
             }
         }
-        process(gameObject);
+        process(obj);
     }
 };
 

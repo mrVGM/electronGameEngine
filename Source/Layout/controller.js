@@ -33,6 +33,8 @@ var controller = {
         model.root = sw;
 
         var eventManager = require('../EventHandling/eventManager');
+        
+        var guid = require('../EventHandling/guidGen');
 
         eventManager.addGlobal({
             priority: 1000,
@@ -60,7 +62,8 @@ var controller = {
                     return true;
                 }
                 return false;
-            }
+            },
+            id: guid.generateId(),
         });
 
         eventManager.addGlobal({
@@ -167,7 +170,8 @@ var controller = {
                     eventManager.addGlobal(mouseUpHandler);
                     return true;
                 }
-            }
+            },
+            id: guid.generateId(),
         });
 
         eventManager.addGlobal({
@@ -182,13 +186,22 @@ var controller = {
                 }
 
                 var target = e.target;
-                if (target.getAttribute('window-type') === 'hierarchy') {
+                
+                var type = target.getAttribute('window-type');
+                if (!type) {
+                    return false;
+                }
+                var id = target.getAttribute('id');
+                id = parseInt(id);
+                var sw = controller.viewToModelMap[id];
+
+                if (sw.contentController) {
+                    sw.contentController.disable();
+                }
+
+                if (type === 'hierarchy') {
                     console.log('Open hierarchy');
 
-                    var id = target.getAttribute('id');
-                    id = parseInt(id);
-
-                    var sw = controller.viewToModelMap[id];
                     if (sw.windowType === 'hierarchy') {
                         return true;
                     }
@@ -203,13 +216,9 @@ var controller = {
                     return true;
                 }
 
-                if (target.getAttribute('window-type') === 'project') {
+                if (type === 'project') {
                     console.log('Open project');
 
-                    var id = target.getAttribute('id');
-                    id = parseInt(id);
-
-                    var sw = controller.viewToModelMap[id];
                     if (sw.windowType === 'project') {
                         return true;
                     }
@@ -224,13 +233,9 @@ var controller = {
                     return true;
                 }
 
-                if (target.getAttribute('window-type') === 'inspector') {
+                if (type === 'inspector') {
                     console.log('Open inspector');
 
-                    var id = target.getAttribute('id');
-                    id = parseInt(id);
-
-                    var sw = controller.viewToModelMap[id];
                     if (sw.windowType === 'inspector') {
                         return true;
                     }
@@ -245,7 +250,8 @@ var controller = {
                     return true;
                 }
 
-            }
+            },
+            id: guid.generateId(),
         });
     }
 };

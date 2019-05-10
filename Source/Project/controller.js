@@ -6,6 +6,8 @@ var viewsDir = __dirname + '\\Views\\';
 
 var controller = {
     create: function () {
+        var guid = require('../EventHandling/guidGen');
+
         var ctrl = {
             eventPool: undefined,
             stateContext: {},
@@ -65,7 +67,8 @@ var controller = {
                             ctrl.eventPool.add(ctrl.states.def.dropGameObject);
 
                             return false;
-                        }
+                        },
+                        id: guid.generateId()
                     },
                     dropGameObjectListener: {
                         priority: -100,
@@ -76,7 +79,8 @@ var controller = {
                             ctrl.eventPool.remove(ctrl.states.def.dropGameObject);
                             ctrl.states.def.dropGameObject = undefined;
                             return false;
-                        }
+                        },
+                        id: guid.generateId(),
                     },
                     enterState: function() {
                         ctrl.render();
@@ -476,7 +480,8 @@ var controller = {
                             var eventManager = require('../EventHandling/eventManager');
                             eventManager.raiseCustomEvent({ type: 'dropFileObject' });
                             ctrl.state.setState(ctrl.states.def);
-                        }
+                        },
+                        id: guid.generateId(),
                     },
                     enterState: function() {
                         var eventManager = require('../EventHandling/eventManager');
@@ -487,6 +492,10 @@ var controller = {
                         var eventManager = require('../EventHandling/eventManager');
                         eventManager.removeGlobal(ctrl.states.dragging.dropHandler);
                     },
+                },
+                disabled: {
+                    enterState: function() {},
+                    exitState: function() {}
                 }
             },
             init: function(callback) {
@@ -550,6 +559,9 @@ var controller = {
             },
             isExpanded: function (fileEntryId) {
                 return ctrl.expanded[fileEntryId];
+            },
+            disable: function() {
+                ctrl.state.setState(ctrl.states.disabled);
             }
         };
         return ctrl;

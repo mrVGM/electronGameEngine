@@ -1,5 +1,6 @@
 var controller = {
     create: function () {
+        var guid = require('../EventHandling/guidGen');
         var ctrl = {
             eventPool: undefined,
             currentInspector: undefined,
@@ -15,7 +16,8 @@ var controller = {
                             var insp = require('./gameObjectInspector');
                             ctrl.currentInspector = insp.create(e.gameObject);
                             ctrl.render();
-                        }
+                        },
+                        id: guid.generateId(),
                     },
                     dropFileObject: undefined,
                     dragFileObjectListener: {
@@ -51,11 +53,13 @@ var controller = {
                                     }
 
                                     return false;
-                                }
+                                },
+                                id: guid.generateId(),
                             }
 
                             ctrl.eventPool.add(ctrl.states.def.dropFileObject);
-                        }
+                        },
+                        id: guid.generateId(),
                     },
                     dropFileObjectListener: {
                         priority: 0,
@@ -65,7 +69,8 @@ var controller = {
                             }
                             ctrl.eventPool.remove(ctrl.states.def.dropFileObject);
                             ctrl.states.def.dropFileObject = undefined;
-                        }
+                        },
+                        id: guid.generateId(),
                     },
                     dropGameObject: undefined,
                     dragGameObjectListener: {
@@ -95,11 +100,13 @@ var controller = {
                                         return true;
                                     }
                                     return false;
-                                }
+                                },
+                                id: guid.generateId(),
                             };
 
                             ctrl.eventPool.add(ctrl.states.def.dropGameObject);
-                        }
+                        },
+                        id: guid.generateId(),
                     },
                     dropGameObjectListener: {
                         priority: 0,
@@ -109,7 +116,8 @@ var controller = {
                             }
                             ctrl.eventPool.remove(ctrl.states.def.dropGameObject)
                             ctrl.states.def.gameObject = undefined;
-                        }
+                        },
+                        id: guid.generateId(),
                     },
                     enterState: function() {
                         var eventManager = require('../EventHandling/eventManager');
@@ -130,6 +138,10 @@ var controller = {
                         eventManager.removeCustom(ctrl.states.def.dropGameObjectListener);
                     },
                 },
+                disabled: {
+                    enterState: function() {},
+                    exitState: function() {}
+                }
             },
             init: function(callback) {
                 var eventPool = require('../EventHandling/eventPool');
@@ -147,7 +159,7 @@ var controller = {
                 var state = require('../State/state');
                 ctrl.state = state.create();
 
-                ctrl.state = ctrl.state.setState(ctrl.states.def);
+                ctrl.state.setState(ctrl.states.def);
             },
             render: function () {
                 var init = require('../init');
@@ -190,6 +202,9 @@ var controller = {
                     params.syncValue(target);
                 });
             },
+            disable: function() {
+                ctrl.state.setState(ctrl.states.disabled);
+            }
         };
         return ctrl;
     }

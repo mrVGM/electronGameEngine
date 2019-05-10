@@ -5,9 +5,17 @@ var customMessagesPool = eventPool.create();
 
 var manager = {
     addGlobal: function(handler) {
+        if (!handler.id) {
+            var stack = new Error().stack;
+            console.log('!!!PLEASE CREATE HANDLER ID!!!', stack);
+        }
         pool.add(handler);
     },
     removeGlobal: function(handler) {
+        if (!handler.id) {
+            var stack = new Error().stack;
+            console.log('!!!PLEASE CREATE HANDLER ID!!!', stack);
+        }
         pool.remove(handler);
     },
     handle: function(e) {
@@ -36,9 +44,17 @@ var manager = {
         customMessagesPool.handleEvent(e);
     },
     addCustom: function(handler) {
+        if (!handler.id) {
+            var stack = new Error().stack;
+            console.log('!!!PLEASE CREATE HANDLER ID!!!', stack);
+        }
         customMessagesPool.add(handler);
     },
     removeCustom: function(handler) {
+        if (!handler.id) {
+            var stack = new Error().stack;
+            console.log('!!!PLEASE CREATE HANDLER ID!!!', stack);
+        }
         customMessagesPool.remove(handler);
     }
 };
