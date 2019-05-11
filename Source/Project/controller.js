@@ -422,7 +422,7 @@ var controller = {
                                     elem = elem.parentElement;
                                 }
                                 
-                                ctrl.stateContext.renaming = { elem: elem, fileEntry: fileEntry };
+                                ctrl.stateContext.renaming = { fileEntry: fileEntry };
                                 ctrl.state.setState(ctrl.states.renaming);
 
                                 return true;
@@ -498,8 +498,13 @@ var controller = {
                     enterState() {
                         ctrl.eventPool.clear();
 
-                        var elem = ctrl.stateContext.renaming.elem;
                         var fileEntry = ctrl.stateContext.renaming.fileEntry;
+
+                        var init = require('../init');
+                        var rootElement = init.parent;
+
+                        var wnd = rootElement.querySelector('[subwindow="' + ctrl.subwindowId + '"]');
+                        var elem = wnd.querySelector('[file-entry="' + fileEntry.id + '"]');
 
                         while (elem.firstChild) {
                             elem.removeChild(elem.firstChild);
