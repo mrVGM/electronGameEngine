@@ -151,7 +151,6 @@ var params = {
         var sw = utils.findSubWindow(elem);
         var contentController = sw.contentController;
 
-        var selected = contentController.currentInspector.selected;
         var componentIndex = elem;
         while (!componentIndex.getAttribute('component-index')) {
             componentIndex = componentIndex.parentElement;
@@ -162,7 +161,8 @@ var params = {
         var paramPath = elem.getAttribute('component-param-path');
         paramPath = paramPath.split('.');
 
-        var param = selected.components[componentIndex].instance.params[paramPath[0]];
+        var component = contentController.currentInspector.getComponent(componentIndex);
+        var param = component.instance.params[paramPath[0]];
         for (var i = 1; i < paramPath.length; ++i) {
             param = param.value;
             var p = paramPath[i];

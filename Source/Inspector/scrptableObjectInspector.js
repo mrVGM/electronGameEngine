@@ -20,11 +20,22 @@ var inspector = {
         var insp = {
             selected: selected,
             scriptableObject: undefined,
+            flushScriptableObject: function () {
+                var projectModel = require('../Project/model');
+                var fs = require('fs');
+                fs.writeFileSync(projectModel.getProjectFolder() + insp.selected.path, JSON.stringify(insp.scriptableObject));
+            }, 
             addComponent: function (component) {
                 insp.scriptableObject.component = component;
                 var fs = require('fs');
                 var projectModel = require('../Project/model');
-                fs.writeFileSync(projectModel.getProjectFolder() + selected.path, JSON.stringify(insp.scriptableObject));
+                insp.flushScriptableObject();
+            },
+            getComponent: function () {
+                return insp.scriptableObject.component;
+            },
+            flushChanges: function () {
+                insp.flushScriptableObject();
             },
             render: function (wnd) {
 
@@ -32,6 +43,21 @@ var inspector = {
                     var ejs = require('ejs');
                     var html = ejs.render(views[frameView], { insp: insp });
                     wnd.innerHTML = html;
+
+                    var inspectorWindow = wnd.querySelector('[inspector-window]');
+                    if (!inspectorWindow) {
+                        return;
+                    }
+
+                    inspectorWindow.addEventListener('change', function (e) {
+                        var target = e.target;
+                        if (!target.getAttribute('component-param-path')) {
+                            return;
+                        }
+                        var params = require('../API/params');
+                        params.syncValue(target);
+                        insp.flushScriptableObject();
+                    });
                 }
 
                 var projectModel = require('../Project/model');

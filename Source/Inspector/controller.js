@@ -50,7 +50,7 @@ var controller = {
                                     if (target.getAttribute('add-script-place')) {
                                         var model = require('../Project/model');
                                         var script = require(model.getProjectFolder() + fileEntry.path);
-                    
+
                                         ctrl.currentInspector.addComponent({ script: fileEntry.id, instance: script.createInstance() });
                                         ctrl.render();
                                         return true;
@@ -60,6 +60,7 @@ var controller = {
                                         var params = require('../API/params');
                                         var param = params.findParam(target);
                                         param.value = fileEntry.id;
+                                        ctrl.currentInspector.flushChanges();
                                         ctrl.render();
                                         return true;
                                     }
@@ -67,7 +68,7 @@ var controller = {
                                     return false;
                                 },
                                 id: guid.generateId(),
-                            }
+                            };
 
                             ctrl.eventPool.add(ctrl.states.def.dropFileObject);
                         },
@@ -108,6 +109,7 @@ var controller = {
                                         var param = params.findParam(target);
                                         param.value = go.id;
 
+                                        ctrl.currentInspector.flushChanges();
                                         ctrl.render();
                                         return true;
                                     }

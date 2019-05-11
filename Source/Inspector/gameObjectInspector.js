@@ -22,6 +22,10 @@ var inspector = {
             addComponent: function (component) {
                 insp.selected.components.push(component);
             },
+            getComponent: function (index) {
+                return insp.selected.components[index];
+            },
+            flushChanges: function () { },
             render: function (wnd) {
                 var ejs = require('ejs');
                 var html = ejs.render(views[frameView], { insp: insp });
