@@ -3,7 +3,7 @@ var fileMap = 'library.json';
 var assetsFolder = 'Assets';
 
 var model = {
-    idCount: 0,
+    idCount: 1,
     fileEntries: undefined,
     root: undefined,
     init: function (callback) {

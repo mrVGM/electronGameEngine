@@ -58,11 +58,10 @@ var fileEntry = {
             return fe;
         }
 
-        path = path.substring(projectPath.length + 1);
         path = path.split('\\');
 
-        var index = 0;
-        var curPath = projectPath;
+        var index = 1;
+        var curPath = assetsFolder;
         var newFile = undefined;
         while (index < path.length) {
             var dir = model.getId(curPath);

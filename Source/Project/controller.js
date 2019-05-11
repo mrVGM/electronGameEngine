@@ -383,6 +383,45 @@ var controller = {
                         });
 
                         ctrl.eventPool.add({
+                            priority: 0,
+                            handle: function(e) {
+                                if (e.type !== 'click') {
+                                    return false;
+                                }
+
+                                if (e.button !== 0) {
+                                    return false;
+                                }
+                    
+                                var target = e.target;
+                                var menuItem = target.getAttribute('project-context-menu');
+                                if (menuItem !== 'Import') {
+                                    return false;
+                                }
+
+                                var electron = require('electron');
+                                var remote = electron.remote;
+                                var dialog = remote.dialog;
+
+                                var path = dialog.showOpenDialog({
+                                    properties: ['openFile']
+                                });
+
+                                path = path[0];
+                                var model = require('./model');
+                                if (!path.startsWith(model.getProjectPath())) {
+                                    ctrl.state.setState(ctrl.states.def);
+                                }
+                                path = path.substring(model.getProjectFolder().length);
+                                var fileEntry = require('./fileEntry');
+                                fileEntry.create(path);
+                                model.flush();
+
+                                ctrl.state.setState(ctrl.states.def);
+                            }
+                        });
+
+                        ctrl.eventPool.add({
                             priority: 10,
                             handle: function(e) {
                                 if (e.type === 'keypress') {
