@@ -101,7 +101,7 @@ var controller = {
                                 var model = require('./model');
                                 fileEntry = model.fileEntries[fileEntry];
 
-                                stateContext.modal = { fileEntry: fileEntry, elem: target };
+                                ctrl.stateContext.modal = { fileEntry: fileEntry, elem: target, event: e };
                                 ctrl.state.setState(ctrl.states.modal);
                                 return true;
                             },
@@ -212,16 +212,16 @@ var controller = {
                 },
                 modal: {
                     enterState: function () {
-                        var fileEntry = stateContext.modal.fileEntry;
-                        var target = stateContext.modal.elem;
+                        var fileEntry = ctrl.stateContext.modal.fileEntry;
+                        var target = ctrl.stateContext.modal.elem;
 
                         var ejs = require('ejs');
                         var html = ejs.render(views[contextMenuView], { fileEntry: fileEntry });
 
                         var contextPlace = target.querySelector('[context-menu-place]');
                         contextPlace.innerHTML = html;
-                        contextPlace.style.left = e.offsetX + 'px';
-                        contextPlace.style.top = e.offsetY + 'px';
+                        contextPlace.style.left = ctrl.stateContext.modal.event.offsetX + 'px';
+                        contextPlace.style.top = ctrl.stateContext.modal.event.offsetY + 'px';
 
                         ctrl.eventPool.clear();
 
