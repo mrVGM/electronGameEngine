@@ -18,7 +18,7 @@ var manager = {
         }
         pool.remove(handler);
     },
-    handle: function(e) {
+    handle: function (e) {
         var utils = require('../utils');
         var sw = utils.findSubWindow(e.target);
         var contentController = undefined;

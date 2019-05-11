@@ -83,8 +83,6 @@ var controller = {
                         id: guid.generateId(),
                     },
                     enterState: function() {
-                        ctrl.render();
-
                         ctrl.eventPool.clear();
                         ctrl.eventPool.add({
                             priority: 0,
@@ -102,15 +100,8 @@ var controller = {
                     
                                 var model = require('./model');
                                 fileEntry = model.fileEntries[fileEntry];
-                    
-                                var ejs = require('ejs');
-                                var html = ejs.render(views[contextMenuView], { fileEntry: fileEntry });
-                    
-                                var contextPlace = target.querySelector('[context-menu-place]');
-                                contextPlace.innerHTML = html;
-                                contextPlace.style.left = e.offsetX + 'px';
-                                contextPlace.style.top = e.offsetY + 'px';
 
+                                stateContext.modal = { fileEntry: fileEntry, elem: target };
                                 ctrl.state.setState(ctrl.states.modal);
                                 return true;
                             },
@@ -167,6 +158,47 @@ var controller = {
                             },
                             id: guid.generateId(),
                         });
+
+                        ctrl.eventPool.add({
+                            priority: 0,
+                            handle: function (e) {
+                                
+                                if (e.type !== 'click') {
+                                    return false;
+                                }
+
+                                if (e.button !== 0) {
+                                    return false;
+                                }
+
+                                var target = e.target;
+                                var fileId = target.getAttribute('file-entry');
+                                if (!fileId) {
+                                    return false;
+                                }
+                                fileId = parseInt(fileId);
+                                var model = require('./model');
+                                var fe = model.fileEntries[fileId];
+
+                                var name = fe.getName();
+                                var ext = name.split('.');
+
+                                if (ext.length === 0) {
+                                    return false;
+                                }
+                                ext = ext[ext.length - 1];
+
+                                if (ext !== 'asset') {
+                                    return false;
+                                }
+
+                                var eventManager = require('../EventHandling/eventManager');
+                                eventManager.raiseCustomEvent({ type: 'scriptableObjectSelect', scriptableObject: fe });
+
+                                return true;
+                            },
+                            id: guid.generateId(),
+                        });
                         
                         var eventManager = require('../EventHandling/eventManager');
                         eventManager.addCustom(ctrl.states.def.dragGameObjectListener);
@@ -179,7 +211,18 @@ var controller = {
                     },
                 },
                 modal: {
-                    enterState: function() {
+                    enterState: function () {
+                        var fileEntry = stateContext.modal.fileEntry;
+                        var target = stateContext.modal.elem;
+
+                        var ejs = require('ejs');
+                        var html = ejs.render(views[contextMenuView], { fileEntry: fileEntry });
+
+                        var contextPlace = target.querySelector('[context-menu-place]');
+                        contextPlace.innerHTML = html;
+                        contextPlace.style.left = e.offsetX + 'px';
+                        contextPlace.style.top = e.offsetY + 'px';
+
                         ctrl.eventPool.clear();
 
                         ctrl.eventPool.add({
@@ -447,7 +490,9 @@ var controller = {
                             id: guid.generateId(),
                         });
                     },
-                    exitState: function() {},
+                    exitState: function () {
+                        ctrl.render();
+                    },
                 },
                 renaming: {
                     enterState() {
@@ -483,21 +528,22 @@ var controller = {
                                 var fs = require('fs');
                                 var newPath = dir.path + '\\' + input.value;
                 
-                                fs.exists(model.getProjectFolder() + newPath, function (res) { 
+                                fs.exists(model.getProjectFolder() + newPath, function (res) {
+
+                                    function repairPaths(fileEntry) {
+                                        fileEntry.path = model.fileEntries[fileEntry.parent].path + '\\' + fileEntry.getName();
+                                        if (!fileEntry.children) {
+                                            return;
+                                        }
+                                        for (var i = 0; i < fileEntry.children.length; ++i) {
+                                            repairPaths(model.fileEntries[fileEntry.children[i]]);
+                                        }
+                                    }
+
                                     if (!res) {
                                         fs.rename(model.getProjectFolder() + fileEntry.path, model.getProjectFolder() + newPath, function (err) {
                                             if (!err) {
                                                 fileEntry.path = newPath;
-                
-                                                function repairPaths(fileEntry) {
-                                                    fileEntry.path = model.fileEntries[fileEntry.parent].path + '\\' + fileEntry.getName();
-                                                    if (!fileEntry.children) {
-                                                        return;
-                                                    }
-                                                    for (var i = 0; i < fileEntry.children.length; ++i) {
-                                                        repairPaths(model.fileEntries[fileEntry.children[i]]);
-                                                    }
-                                                }
                 
                                                 repairPaths(fileEntry);
                 
@@ -515,7 +561,9 @@ var controller = {
                             id: guid.generateId(),
                         });
                     },
-                    exitState() {},
+                    exitState() {
+                        ctrl.render();
+                    },
                 },
                 dragging: {
                     dropHandler: {

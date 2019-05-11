@@ -19,6 +19,18 @@ var controller = {
                         },
                         id: guid.generateId(),
                     },
+                    selectSOListener: {
+                        priority: -100,
+                        handle: function (e) {
+                            if (e.type !== 'scriptableObjectSelect') {
+                                return false;
+                            }
+                            var insp = require('./scrptableObjectInspector');
+                            ctrl.currentInspector = insp.create(e.scriptableObject);
+                            ctrl.render();
+                        },
+                        id: guid.generateId(),
+                    },
                     dropFileObject: undefined,
                     dragFileObjectListener: {
                         priority: 0,
@@ -39,7 +51,7 @@ var controller = {
                                         var model = require('../Project/model');
                                         var script = require(model.getProjectFolder() + fileEntry.path);
                     
-                                        ctrl.currentInspector.selected.components.push({ script: fileEntry.id, instance: script.createInstance() });
+                                        ctrl.currentInspector.addComponent({ script: fileEntry.id, instance: script.createInstance() });
                                         ctrl.render();
                                         return true;
                                     }
@@ -122,6 +134,7 @@ var controller = {
                     enterState: function() {
                         var eventManager = require('../EventHandling/eventManager');
                         eventManager.addCustom(ctrl.states.def.selectGOListener);
+                        eventManager.addCustom(ctrl.states.def.selectSOListener);
                         eventManager.addCustom(ctrl.states.def.dragFileObjectListener);
                         eventManager.addCustom(ctrl.states.def.dropFileObjectListener);
 
@@ -131,6 +144,7 @@ var controller = {
                     exitState: function() {
                         var eventManager = require('../EventHandling/eventManager');
                         eventManager.removeCustom(ctrl.states.def.selectGOListener);
+                        eventManager.removeCustom(ctrl.states.def.selectSOListener);
                         eventManager.removeCustom(ctrl.states.def.dragFileObjectListener);
                         eventManager.removeCustom(ctrl.states.def.dropFileObjectListener);
 
@@ -150,11 +164,16 @@ var controller = {
                     var params = require('../API/params');
                     params.init(callback);
                 }
-                function initInsp() {
+                function initGOInsp() {
                     var insp = require('./gameObjectInspector');
                     insp.init(initParams);
                 }
-                initInsp();
+                function initSOInsp() {
+                    var insp = require('./scrptableObjectInspector');
+                    insp.init(initGOInsp);
+                }
+
+                initSOInsp();
 
                 var state = require('../State/state');
                 ctrl.state = state.create();
@@ -186,21 +205,7 @@ var controller = {
                     var insp = require('./gameObjectInspector');
                     ctrl.currentInspector = insp.create(controller.selected);
                 }
-                wnd.innerHTML = ctrl.currentInspector.render();
-
-                var inspectorWindow = wnd.querySelector('[inspector-window]');
-                if (!inspectorWindow) {
-                    return;
-                }
-
-                inspectorWindow.addEventListener('change', function (e) {
-                    var target = e.target;
-                    if (!target.getAttribute('component-param-path')) {
-                        return;
-                    }
-                    var params = require('../API/params');
-                    params.syncValue(target);
-                });
+                ctrl.currentInspector.render(wnd);
             },
             disable: function() {
                 ctrl.state.setState(ctrl.states.disabled);

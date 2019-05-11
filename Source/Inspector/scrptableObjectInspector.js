@@ -1,0 +1,67 @@
+var viewsDir = __dirname + '\\Views\\';
+var frameView = 'frameSO.html';
+var componentView = 'component.html';
+var viewsFilenames = [frameView, componentView];
+var views = undefined;
+
+var inspector = {
+    init: function (callback) {
+        if (!views) {
+            var utils = require('../utils');
+            utils.readFiles(viewsDir, viewsFilenames, function (res) {
+                views = res;
+                callback();
+            });
+            return;
+        }
+        callback();
+    },
+    create: function (selected) {
+        var insp = {
+            selected: selected,
+            scriptableObject: undefined,
+            addComponent: function (component) {
+                insp.scriptableObject.component = component;
+                var fs = require('fs');
+                var projectModel = require('../Project/model');
+                fs.writeFileSync(projectModel.getProjectFolder() + selected.path, JSON.stringify(insp.scriptableObject));
+            },
+            render: function (wnd) {
+
+                function createHTML() {
+                    var ejs = require('ejs');
+                    var html = ejs.render(views[frameView], { insp: insp });
+                    wnd.innerHTML = html;
+                }
+
+                var projectModel = require('../Project/model');
+
+                var fe = insp.selected;
+                var fs = require('fs');
+                fs.readFile(projectModel.getProjectFolder() + fe.path, function (err, data) {
+                    data = data.toString();
+                    var so = {};
+                    if (!data || data === '') {
+                        data = JSON.stringify(so);
+                        fs.writeFile(projectModel.getProjectPath() + fe.path, data, function () {
+                            insp.scriptableObject = so;
+                            createHTML();
+                        });
+                    } else {
+                        so = JSON.parse(data);
+                        insp.scriptableObject = so;
+                        createHTML();
+                    }
+                });
+            },
+            renderComponent: function () {
+                var paramsAPI = require('../API/params');
+                var ejs = require('ejs');
+                return ejs.render(views[componentView], { component: insp.scriptableObject.component, componentIndex: 0, paramsAPI: paramsAPI });
+            },
+        };
+        return insp;
+    }
+};
+
+module.exports = inspector;

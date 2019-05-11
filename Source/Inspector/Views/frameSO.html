@@ -1,0 +1,9 @@
+<div class="anchor-element unselectable" style="left: 15px; width:0%;" inspector-window="">
+    <% if (!insp.scriptableObject.component) { %>
+        <div style="width: 200px">
+            <div add-script-place="<%= insp.selected.id %>">+ Script</div>
+        </div>
+    <% } else { %>
+        <%- insp.renderComponent() %>
+    <% } %>
+</div>

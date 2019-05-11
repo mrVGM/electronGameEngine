@@ -118,7 +118,8 @@ var controller = {
 
                             controller.refresh();
                             return true;
-                        }
+                        },
+                        id: guid.generateId(),
                     };
 
                     eventManager.addGlobal(mouseUpHandler);
@@ -164,7 +165,8 @@ var controller = {
                             eventManager.removeGlobal(mouseUpHandler);
                             controller.refresh();
                             return true;
-                        }
+                        },
+                        id: guid.generateId(),
                     };
 
                     eventManager.addGlobal(mouseUpHandler);

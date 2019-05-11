@@ -19,10 +19,28 @@ var inspector = {
     create: function (selected) {
         var insp = {
             selected: selected,
-            render: function () {
+            addComponent: function (component) {
+                insp.selected.components.push(component);
+            },
+            render: function (wnd) {
                 var ejs = require('ejs');
                 var html = ejs.render(views[frameView], { insp: insp });
-                return html;
+
+                wnd.innerHTML = html;
+
+                var inspectorWindow = wnd.querySelector('[inspector-window]');
+                if (!inspectorWindow) {
+                    return;
+                }
+
+                inspectorWindow.addEventListener('change', function (e) {
+                    var target = e.target;
+                    if (!target.getAttribute('component-param-path')) {
+                        return;
+                    }
+                    var params = require('../API/params');
+                    params.syncValue(target);
+                });
             },
             renderComponent: function (componentIndex) {
                 var paramsAPI = require('../API/params');
