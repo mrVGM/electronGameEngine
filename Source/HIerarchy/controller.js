@@ -106,7 +106,8 @@ var controller = {
                                     }
 
                                     return true;
-                                }
+                                },
+                                id: guid.generateId(),
                             };
 
                             ctrl.eventPool.add(ctrl.states.def.dropFileObject);
@@ -163,7 +164,8 @@ var controller = {
                                 contextMenuPlace.style.top = e.offsetY + 'px';
 
                                 ctrl.state.setState(ctrl.states.modal);
-                            }
+                            },
+                            id: guid.generateId(),
                         });
 
                         ctrl.eventPool.add({
@@ -190,7 +192,8 @@ var controller = {
                                 sw.contentController.expandedMap[go] = !sw.contentController.expandedMap[go];
                                 controller.refresh();
                                 return true;
-                            }
+                            },
+                            id: guid.generateId(),
                         });
 
                         ctrl.eventPool.add({
@@ -214,7 +217,8 @@ var controller = {
 
                                 ctrl.stateContext.dragging = { gameObject: go };
                                 ctrl.state.setState(ctrl.states.dragging);
-                            }
+                            },
+                            id: guid.generateId(),
                         });
 
                         ctrl.eventPool.add({
@@ -238,7 +242,8 @@ var controller = {
                                 eventManager.raiseCustomEvent({ type: 'gameObjectSelect', gameObject: go });
 
                                 return true;
-                            }
+                            },
+                            id: guid.generateId(),
                         });
 
                         var eventManager = require('../EventHandling/eventManager');
@@ -314,7 +319,8 @@ var controller = {
                                     return true;
                                 }
                                 return false;
-                            }
+                            },
+                            id: guid.generateId(),
                         });
                         
                         ctrl.eventPool.add({
@@ -347,7 +353,8 @@ var controller = {
                                     return true;
                                 }
                                 return false;
-                            }
+                            },
+                            id: guid.generateId(),
                         });
                         
                         ctrl.eventPool.add({
@@ -381,7 +388,8 @@ var controller = {
                                     return true;
                                 }
                                 return false;
-                            }
+                            },
+                            id: guid.generateId(),
                         });
 
                         ctrl.eventPool.add({
@@ -401,7 +409,8 @@ var controller = {
                                     return true;
                                 }
                                 return false;
-                            }
+                            },
+                            id: guid.generateId(),
                         });
                     },
                     exitState: function() {}
@@ -437,7 +446,8 @@ var controller = {
                                     ctrl.state.setState(ctrl.states.def);
                                 }
                                 return true;
-                            }
+                            },
+                            id: guid.generateId(),
                         });
                     },
                     exitState() {

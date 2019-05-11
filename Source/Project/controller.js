@@ -21,7 +21,6 @@ var controller = {
                             if (evt.type !== 'dragGameObject') {
                                 return false;
                             }
-                            console.log('Game object dragged');
                             
                             var go = evt.gameObject;
 
@@ -61,7 +60,8 @@ var controller = {
                                     }
 
                                     return true;
-                                }
+                                },
+                                id: guid.generateId(),
                             };
 
                             ctrl.eventPool.add(ctrl.states.def.dropGameObject);
@@ -114,6 +114,7 @@ var controller = {
                                 ctrl.state.setState(ctrl.states.modal);
                                 return true;
                             },
+                            id: guid.generateId(),
                         });
 
                         ctrl.eventPool.add({
@@ -136,6 +137,7 @@ var controller = {
                                 ctrl.expanded[id] = !ctrl.expanded[id];
                                 ctrl.render();
                             },
+                            id: guid.generateId(),
                         });
 
                         ctrl.eventPool.add({
@@ -162,7 +164,8 @@ var controller = {
                                 ctrl.state.setState(ctrl.states.dragging);
 
                                 return true;
-                            }
+                            },
+                            id: guid.generateId(),
                         });
                         
                         var eventManager = require('../EventHandling/eventManager');
@@ -228,6 +231,7 @@ var controller = {
                     
                                 return true;
                             },
+                            id: guid.generateId(),
                         });
 
                         ctrl.eventPool.add({
@@ -278,7 +282,8 @@ var controller = {
                                 });
                     
                                 return true;
-                            }
+                            },
+                            id: guid.generateId(),
                         });
 
                         ctrl.eventPool.add({
@@ -297,8 +302,6 @@ var controller = {
                                 if (menuItem !== 'Delete') {
                                     return false;
                                 }
-                    
-                                console.log('delete', e);
                     
                                 var id = target.getAttribute('id');
                                 id = parseInt(id);
@@ -345,6 +348,7 @@ var controller = {
                                 ctrl.state.setState(ctrl.states.def);
                                 return true;
                             },
+                            id: guid.generateId(),
                         });
 
                         ctrl.eventPool.add({
@@ -379,7 +383,8 @@ var controller = {
                                 ctrl.state.setState(ctrl.states.renaming);
 
                                 return true;
-                            }
+                            },
+                            id: guid.generateId(),
                         });
 
                         ctrl.eventPool.add({
@@ -418,7 +423,8 @@ var controller = {
                                 model.flush();
 
                                 ctrl.state.setState(ctrl.states.def);
-                            }
+                            },
+                            id: guid.generateId(),
                         });
 
                         ctrl.eventPool.add({
@@ -437,7 +443,8 @@ var controller = {
                                     return true;
                                 }
                                 return false;
-                            }
+                            },
+                            id: guid.generateId(),
                         });
                     },
                     exitState: function() {},
@@ -504,7 +511,8 @@ var controller = {
                                 });
 
                                 return true;
-                            }
+                            },
+                            id: guid.generateId(),
                         });
                     },
                     exitState() {},

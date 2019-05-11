@@ -25,9 +25,18 @@ var eventPool = {
                 pool.handlers = [];
             },
             add: function(handler) {
+                if (!handler.id) {
+                    var stack = new Error().stack;
+                    console.log('!!!PLEASE CREATE HANDLER ID!!!', stack);
+                }
                 pool.handlers.push(handler);
             },
             remove: function(handler) {
+                if (!handler.id) {
+                    var stack = new Error().stack;
+                    console.log('!!!PLEASE CREATE HANDLER ID!!!', stack);
+                }
+
                 for (var i = 0; i < pool.handlers.length; ++i) {
                     if (pool.handlers[i].id === handler.id) {
                         pool.handlers.splice(i, 1);
