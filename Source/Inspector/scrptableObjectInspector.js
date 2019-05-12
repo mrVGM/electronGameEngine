@@ -76,6 +76,11 @@ var inspector = {
                     } else {
                         so = JSON.parse(data);
                         insp.scriptableObject = so;
+                        if (so.component) {
+                            var utils = require('../utils');
+                            utils.updateComponentInstance(so.component);
+                            insp.flushScriptableObject();
+                        }
                         createHTML();
                     }
                 });

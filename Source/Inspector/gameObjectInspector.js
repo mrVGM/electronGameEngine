@@ -17,6 +17,14 @@ var inspector = {
         callback();
     },
     create: function (selected) {
+        if (selected) {
+            var utils = require('../utils');
+
+            for (var i = 0; i < selected.components.length; ++i) {
+                utils.updateComponentInstance(selected.components[i]);
+            }
+        }
+
         var insp = {
             selected: selected,
             addComponent: function (component) {
