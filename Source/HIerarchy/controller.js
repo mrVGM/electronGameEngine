@@ -2,7 +2,8 @@ var views = undefined;
 var viewDir = __dirname + '\\Views\\';
 var contextMenuView = 'contextMenu.html';
 var renameView = 'renameView.html';
-var viewFilenames = [contextMenuView, renameView];
+var hierarchyView = 'hierarchy.html';
+var viewFilenames = [contextMenuView, renameView, hierarchyView];
 
 var controller = {
     viewToGameObjectsMap: {},
@@ -24,11 +25,6 @@ var controller = {
         }
     },
     create: function () {
-        var utils = require('../utils');
-        utils.readFiles(viewDir, viewFilenames, function (res) {
-            views = res;
-        });
-
         var st = require('../State/state');
 
         var guid = require('../EventHandling/guidGen');
@@ -39,6 +35,7 @@ var controller = {
             eventPool: undefined,
             stateContext: {},
             state: st.create(),
+            openedPrefab: undefined,
             states: {
                 def: {
                     dropFileObject: undefined,
@@ -76,6 +73,7 @@ var controller = {
                                             controller.viewToGameObjectsMap = {};
                                             var model = require('./model');
                                             model.root = go;
+                                            ctrl.openedPrefab = fe;
 
                                             fillViewToObjectsMap(model.root);
 
@@ -244,6 +242,30 @@ var controller = {
                                 return true;
                             },
                             id: guid.generateId(),
+                        });
+
+                        ctrl.eventPool.add({
+                            priority: 0,
+                            handle: function (e) {
+                                if (e.type !== 'click') {
+                                    return false;
+                                }
+                                var target = e.target;
+                                if (target.getAttribute('hierarchy-prefab-flush-button')) {
+                                    var fs = require('fs');
+                                    var projectModel = require('../Project/model');
+                                    var model = require('./model');
+                                    fs.writeFile(projectModel.getProjectFolder() + ctrl.openedPrefab.path, JSON.stringify(model.root.serializable()), function (err) {
+                                        if (err) {
+                                            console.log(err);
+                                            return;
+                                        }
+                                        alert(ctrl.openedPrefab.getName() + ' flushed!');
+                                    });
+                                }
+                                return true;
+                            },
+                            id: guid.generateId()
                         });
 
                         var eventManager = require('../EventHandling/eventManager');
@@ -494,8 +516,20 @@ var controller = {
 
                 ctrl.state.setState(ctrl.states.def);
 
-                var go = require('./gameObject');
-                go.init(callback);
+                function initGO() {
+                    var go = require('./gameObject');
+                    go.init(callback);
+                }
+
+                if (!views) {
+                    var utils = require('../utils');
+                    utils.readFiles(viewDir, viewFilenames, function (res) {
+                        views = res;
+                        initGO();
+                    });
+                    return;
+                }
+                initGO();
             },
             render: function () {
                 var init = require('../init');
@@ -521,7 +555,10 @@ var controller = {
 
                 var model = require('./model');
 
-                wnd.innerHTML = model.root.render(ctrl);
+                var ejs = require('ejs');
+                var html = ejs.render(views[hierarchyView], { root: model.root, controller: ctrl });
+
+                wnd.innerHTML = html;
             },
             getRoot: function () {
                 var model = require('./model');

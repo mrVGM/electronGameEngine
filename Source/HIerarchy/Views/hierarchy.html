@@ -1,0 +1,14 @@
+<div class="anchor-element unselectable">
+    <% var topOffset = '0px'; %>
+    <% if (controller.openedPrefab) { %>
+        <% topOffset = '6px'; %>
+        <div class="anchor-element" style="left: 15px">
+            <div type="text" hierarchy-selected-prefab="<%= controller.openedPrefab.id %>"><%= controller.openedPrefab.getName() %></div>
+            <button hierarchy-prefab-flush-button="<%= controller.openedPrefab.id %>">Flush</button>
+            <button hierarchy-prefab-close-button="<%= controller.openedPrefab.id %>">Close</button>
+        </div>
+    <% } %>
+    <div class="anchor-element" style="top: <%= topOffset %>">
+        <%- root.render(controller) %>
+    </div>
+</div>
