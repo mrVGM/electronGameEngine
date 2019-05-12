@@ -24,6 +24,7 @@ var controller = {
             }
         }
     },
+    openedPrefab: undefined,
     create: function () {
         var st = require('../State/state');
 
@@ -35,7 +36,9 @@ var controller = {
             eventPool: undefined,
             stateContext: {},
             state: st.create(),
-            openedPrefab: undefined,
+            getOpenedPrefab: function () {
+                return controller.openedPrefab;
+            },
             states: {
                 def: {
                     dropFileObject: undefined,
@@ -73,7 +76,7 @@ var controller = {
                                             controller.viewToGameObjectsMap = {};
                                             var model = require('./model');
                                             model.root = go;
-                                            ctrl.openedPrefab = fe;
+                                            controller.openedPrefab = fe;
 
                                             fillViewToObjectsMap(model.root);
 
@@ -251,18 +254,41 @@ var controller = {
                                     return false;
                                 }
                                 var target = e.target;
-                                if (target.getAttribute('hierarchy-prefab-flush-button')) {
-                                    var fs = require('fs');
-                                    var projectModel = require('../Project/model');
-                                    var model = require('./model');
-                                    fs.writeFile(projectModel.getProjectFolder() + ctrl.openedPrefab.path, JSON.stringify(model.root.serializable()), function (err) {
-                                        if (err) {
-                                            console.log(err);
-                                            return;
-                                        }
-                                        alert(ctrl.openedPrefab.getName() + ' flushed!');
-                                    });
+                                if (!target.getAttribute('hierarchy-prefab-flush-button')) {
+                                    return false;
                                 }
+                                var fs = require('fs');
+                                var projectModel = require('../Project/model');
+                                var model = require('./model');
+                                fs.writeFile(projectModel.getProjectFolder() + ctrl.getOpenedPrefab().path, JSON.stringify(model.root.serializable()), function (err) {
+                                    if (err) {
+                                        console.log(err);
+                                        return;
+                                    }
+                                    alert(ctrl.getOpenedPrefab().getName() + ' flushed!');
+                                });
+                                return true;
+                            },
+                            id: guid.generateId()
+                        });
+
+                        ctrl.eventPool.add({
+                            priority: 0,
+                            handle: function (e) {
+                                if (e.type !== 'click') {
+                                    return false;
+                                }
+                                var target = e.target;
+                                if (!target.getAttribute('hierarchy-prefab-close-button')) {
+                                    return false;
+                                }
+                                var newGO = ctrl.createGameObject();
+                                var model = require('./model');
+                                model.root = newGO;
+                                controller.viewToGameObjectsMap = {};
+                                controller.viewToGameObjectsMap[newGO.id] = newGO;
+                                controller.openedPrefab = undefined;
+                                controller.refresh();
                                 return true;
                             },
                             id: guid.generateId()
