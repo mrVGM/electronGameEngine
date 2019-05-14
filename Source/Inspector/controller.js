@@ -50,8 +50,8 @@ var controller = {
                                     if (target.getAttribute('add-script-place')) {
                                         var model = require('../Project/model');
                                         var script = require(model.getProjectFolder() + fileEntry.path);
-
-                                        ctrl.currentInspector.addComponent({ script: fileEntry.id, instance: script.createInstance() });
+                                        var utils = require('../utils');
+                                        ctrl.currentInspector.addComponent({ script: fileEntry.id, instance: utils.createInstance(script) });
                                         ctrl.render();
                                         return true;
                                     }

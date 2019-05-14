@@ -58,6 +58,27 @@ var utils = {
         }
         remove();
     },
+    createInstance: function (script) {
+        if (!script.extendsFrom) {
+            return script.createInstance();
+        }
+        var projectModel = require('./Project/model');
+        var baseScript = undefined;
+        for (var feId in projectModel.fileEntries) {
+            if (projectModel.fileEntries[feId].path === script.extendsFrom) {
+                baseScript = projectModel.fileEntries[feId];
+                break;
+            }
+        }
+        baseScript = require(projectModel.getProjectFolder() + baseScript.path);
+        var baseInstance = utils.createInstance(baseScript);
+        var instance = script.createInstance();
+        for (var p in instance.params) {
+            baseInstance.params[p] = instance.params[p];
+        }
+        baseInstance.name = instance.name;
+        return baseInstance;
+    },
     updateComponentInstance: function (comp) {
 
         function copyParam(p) {
@@ -123,7 +144,7 @@ var utils = {
             var projectModel = require('./Project/model');
             var fe = projectModel.fileEntries[component.script];
             var script = require(projectModel.getProjectFolder() + fe.path);
-            var newInstance = script.createInstance();
+            var newInstance = utils.createInstance(script);
             updateParams(newInstance.params, component.instance.params);
             component.instance = newInstance;
         }
