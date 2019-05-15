@@ -24,8 +24,8 @@ var model = {
                     model.fileEntries = JSON.parse(data.toString());
                     var fileEntry = require('./fileEntry');
                     for (var i in model.fileEntries) {
-                        if (model.idCount < i) {
-                            model.idCount = i;
+                        if (model.idCount < model.fileEntries[i].id) {
+                            model.idCount = model.fileEntries[i].id;
                         }
                         model.fileEntries[i] = fileEntry.deserialize(model.fileEntries[i]);
                     }
