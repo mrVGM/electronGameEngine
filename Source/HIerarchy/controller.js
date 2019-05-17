@@ -65,14 +65,22 @@ var controller = {
                                         }
                                     }
 
+                                    function setParent(go, parent) {
+                                        go.parent = parent;
+                                        for (var i = 0; i < go.children.length; ++i) {
+                                            setParent(go.children[i], go);
+                                        }
+                                    }
+
                                     if (target.getAttribute('subwindow')) {
                                         var fs = require('fs');
                                         var projectModel = require('../Project/model');
-                                        fs.readFile(projectModel.getProjectFolder() + fe.path, function(err, data) {
+                                        fs.readFile(projectModel.getProjectFolder() + fe.path, function (err, data) {
                                             data = data.toString();
                                             var go = JSON.parse(data);
                                             var gameObject = require('./gameObject');
                                             gameObject.deserialize(go);
+                                            setParent(go, undefined);
                                             controller.viewToGameObjectsMap = {};
                                             var model = require('./model');
                                             model.root = go;
@@ -99,7 +107,8 @@ var controller = {
                                             gameObject.deserialize(go);
 
                                             fillViewToObjectsMap(go);
-                                            
+
+                                            setParent(go, gameObjectFromHierarchy);
                                             gameObjectFromHierarchy.children.push(go);
 
                                             controller.refresh();
