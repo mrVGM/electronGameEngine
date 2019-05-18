@@ -274,7 +274,6 @@ var controller = {
                     var sin = u.x * d.y - u.y * d.x;
 
                     if (Math.abs(sin) < 0.00001) {
-                        console.log(sin);
                         return;
                     }
 
@@ -295,7 +294,6 @@ var controller = {
                     context.rotate(-rot);
                     context.translate(-dl.x, -dl.y);
                 }
-                console.log(images, images.length);
                 for (var i = 0; i < images.length; ++i) {
                     renderImage(images[i].component, images[i].gameObject);
                 }
