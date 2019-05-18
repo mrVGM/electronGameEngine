@@ -252,6 +252,22 @@ var controller = {
                     return true;
                 }
 
+                if (type === 'viewport') {
+                    console.log('Open viewport');
+
+                    if (sw.windowType === 'viewport') {
+                        return true;
+                    }
+
+                    sw.windowType = 'viewport';
+                    var viewportController = require('../Viewport/controller');
+                    sw.contentController = viewportController.create();
+                    sw.contentController.subwindowId = id;
+                    sw.contentController.init(function () {
+                        sw.contentController.render();
+                    });
+                    return true;
+                }
             },
             id: guid.generateId(),
         });

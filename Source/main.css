@@ -83,3 +83,7 @@ html, body {
     overflow-x: scroll;
     overflow-y: scroll;
 }
+
+.no-wrap {
+    white-space: nowrap
+}
