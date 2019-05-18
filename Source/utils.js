@@ -105,38 +105,36 @@ var utils = {
             return res;
         }
 
+        function updateSingleParam(fromScript, fromData) {
+            if (fromData.type !== fromData.type)
+                return;
+
+            if (fromData.type === 'array') {
+                fromScript.value = [];
+                for (var i = 0; i < fromData.value.length; ++i) {
+                    var elem = copyParam(fromScript.defaultElement);
+                    updateSingleParam(elem, fromData.value[i]);
+                    elem.name = fromData.value[i].name;
+                    fromScript.value.push(elem);
+                }
+                return;
+            }
+
+            if (fromData.type === 'custom') {
+                updateParams(fromScript.value, fromData.value);
+                return;
+            }
+
+            fromScript.value = fromData.value;
+        }
+
         function updateParams(fromScript, fromData) {
             for (var p in fromData) {
                 if (!fromScript[p]) {
                     continue;
                 }
 
-                var script = fromScript[p];
-                var data = fromData[p];
-
-                if (script.type !== data.type) {
-                    continue;
-                }
-
-                if (data.type === 'array' && data.defaultElement.type === script.defaultElement.type) {
-                    script.value = [];
-                    for (var i = 0; i < data.value.length; ++i) {
-                        var elem = copyParam(script.defaultElement);
-                        updateParams(elem, data.value[i]);
-                        script.value.push(elem);
-                    }
-                    return;
-                }
-                if (data.type === 'custom') {
-                    for (var prop in data.value) {
-                        if (script.value[prop]) {
-                            updateParams(script.value[prop], data.value[prop]);
-                        }
-                    }
-                    return;
-                }
-
-                script.value = data.value;
+                updateSingleParam(fromScript[p], fromData[p]);
             }
         }
 
