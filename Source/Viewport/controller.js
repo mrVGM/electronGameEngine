@@ -162,141 +162,14 @@ var controller = {
                 if (!hierarchyModel.root) {
                     return;
                 }
-                function imageComponent(go) {
-                    for (var i = 0; i < go.components.length; ++i) {
-                        if (go.components[i].script === ctrl.settingsFileLoaded.component.instance.params.imageScript.value)
-                            return { component: go.components[i].instance, gameObject: go };
-                    }
-                }
-
-                function transformComponent(go) {
-                    for (var i = 0; i < go.components.length; ++i) {
-                        if (go.components[i].script === ctrl.settingsFileLoaded.component.instance.params.transformScript.value)
-                            return go.components[i].instance;
-                    }
-                }
-
-                function getImages(go) {
-                    var res = [];
-                    var imgComp = imageComponent(go);
-                    if (imgComp) {
-                        res.push(imgComp);
-                    }
-                    for (var i = 0; i < go.children.length; ++i) {
-                        res = res.concat(getImages(go.children[i]));
-                    }
-                    return res;
-                }
-
-                function getWorldPos(go, p) {
-                    function findParentTransform(go) {
-                        if (!go) {
-                            return;
-                        }
-                        var tr = transformComponent(go);
-                        if (tr) {
-                            return tr;
-                        }
-                        return findParentTransform(go.parent);
-                    }
-
-                    function transform(component, vector) {
-                        var scale = { x: component.params.scaleX.value, y: component.params.scaleY.value };
-
-                        var res = { x: component.params.x.value, y: component.params.y.value };
-                        res = { x: res.x + vector.x, y: res.y + vector.y };
-                        res = { x: res.x * scale.x, y: res.y * scale.y };
-
-                        var rot = component.params.rotation.value;
-                        rot = 2 * Math.PI * rot / 360.0;
-
-                        var x = { x: Math.cos(-rot), y: Math.sin(-rot) };
-                        var y = { x: -x.y, y: x.x };
-
-                        x = { x: res.x * x.x, y: res.x * x.y };
-                        y = { x: res.y * y.x, y: res.y * y.y };
-                        res = { x: x.x + y.x, y: x.y + y.y }; 
-                        return res;
-                    }
-
-                    var curGo = go;
-
-                    var res = p;
-
-                    while (curGo) {
-                        var tr = findParentTransform(curGo);
-                        if (tr) {
-                            res = transform(tr, res);
-                            curGo = curGo.parent;
-                        } else {
-                            return res;
-                        }
-                    }
-
-                    return res;
-                }
-
-                var projectModel = require('../Project/model');
-
-                var images = getImages(hierarchyModel.root);
-
-
-                for (var i = 0; i < images.length; ++i) {
-                    if (!ctrl.images[images[i].component.params.image.value]) {
-                        var image = new Image();
-                        var fe = projectModel.fileEntries[images[i].component.params.image.value];
-                        if (!fe) {
-                            return;
-                        }
-
-                        image.src = 'file://' + projectModel.getProjectFolder() + fe.path;
-                        ctrl.images[fe.id] = image;
-                    }
-                }
-
+                
                 var wnd = ctrl.getHTMLWindow();
                 var canvas = wnd.querySelector('canvas');
                 var context = canvas.getContext('2d');
+
+                var imageRenderer = require('../Viewport/renderElements/image');
                 context.clearRect(0, 0, canvas.width, canvas.height);
-
-                function renderImage(instance, go) {
-                    var image = ctrl.images[instance.params.image.value];
-                    
-                    var dl = getWorldPos(go, { x: -instance.params.width.value / 2.0, y: -instance.params.height.value / 2.0 });
-                    var dr = getWorldPos(go, { x: instance.params.width.value / 2.0, y: -instance.params.height.value / 2.0 });
-                    var ul = getWorldPos(go, { x: -instance.params.width.value / 2.0, y: instance.params.height.value / 2.0 });
-
-                    var d = { x: dr.x - dl.x, y: dr.y - dl.y };
-                    var u = { x: ul.x - dl.x, y: ul.y - dl.y };
-                    var rot = Math.atan2(d.y, d.x);
-
-                    var cos = u.x * d.x + u.y * d.y;
-                    var sin = u.x * d.y - u.y * d.x;
-
-                    if (Math.abs(sin) < 0.00001) {
-                        return;
-                    }
-
-                    var hskew = cos / sin;
-
-                    var w = Math.sqrt(d.x * d.x + d.y * d.y);
-
-                    var perp = { x: -d.y, y: d.x };
-                    var h = Math.abs(u.x * perp.x + u.y * perp.y) / Math.sqrt(perp.x * perp.x + perp.y * perp.y);
-
-                    context.translate(dl.x, dl.y);
-                    context.rotate(rot);
-
-                    context.transform(1, 0, hskew, 1, 0, 0);
-                    context.drawImage(image, 0, 0, w, h);
-                    context.transform(1, 0, -hskew, 1, 0, 0);
-
-                    context.rotate(-rot);
-                    context.translate(-dl.x, -dl.y);
-                }
-                for (var i = 0; i < images.length; ++i) {
-                    renderImage(images[i].component, images[i].gameObject);
-                }
+                imageRenderer.renderAll(hierarchyModel.root, ctrl.settingsFileLoaded, context);
             }
         };
         return ctrl;
