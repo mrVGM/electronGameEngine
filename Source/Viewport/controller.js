@@ -168,8 +168,10 @@ var controller = {
                 var context = canvas.getContext('2d');
 
                 var imageRenderer = require('../Viewport/renderElements/image');
+                var bezierRenderer = require('../Viewport/renderElements/bezierCurve');
                 context.clearRect(0, 0, canvas.width, canvas.height);
                 imageRenderer.renderAll(hierarchyModel.root, ctrl.settingsFileLoaded, context);
+                bezierRenderer.renderAll(hierarchyModel.root, ctrl.settingsFileLoaded, context);
             }
         };
         return ctrl;
