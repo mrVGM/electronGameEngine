@@ -25,48 +25,63 @@ var bezier = {
         }
         var points = [];
         points = points.concat(bez.params.controlPoints.value);
-        for (var i = 0; i < points.length - 1; ++i) {
-            for (var j = i + 1; j < points.length; ++j) {
-                if (points[i].value.weight.value > points[j].value.weight.value) {
-                    var tmp = points[i];
-                    points[i] = points[j];
-                    points[j] = tmp;
-                }
+
+        var tr = require('./transform');
+        for (var i = 0; i < points.length; ++i) {
+            var cur = {
+                weight: points[i].value.weight.value,
+                point: searchGO(go, points[i].value.point.value),
+            };
+            if (points[i].value.leftHandle.value) {
+                cur.leftHandle = searchGO(go, points[i].value.leftHandle.value);
+            }
+            if (points[i].value.rightHandle.value) {
+                cur.rightHandle = searchGO(go, points[i].value.rightHandle.value);
+            }
+            cur.point = tr.getPosition(cur.point, { x: 0, y: 0 }, viewportSettings);
+            if (cur.leftHandle) {
+                cur.leftHandle = tr.getPosition(cur.leftHandle, { x: 0, y: 0 }, viewportSettings);
+            }
+            if (cur.rightHandle) {
+                cur.rightHandle = tr.getPosition(cur.rightHandle, { x: 0, y: 0 }, viewportSettings);
+            }
+            points[i] = cur;
+        }
+
+        var projectModel = require('../../Project/model');
+        var bezierScript = projectModel.fileEntries[viewportSettings.component.instance.params.bezierCurveScript.value];
+        bezierScript = require(projectModel.getProjectFolder() + bezierScript.path);
+        var bezCurveInstance = bezierScript.createInstance();
+
+        var mathScript = projectModel.fileEntries[viewportSettings.component.instance.params.mathScript.value];
+        var math = require(projectModel.getProjectFolder() + mathScript.path);
+
+        bezCurveInstance.interface.getMath = function () {
+            return math.math;
+        };
+
+        var minWeight = points[0].weight;
+        var maxWeight = points[0].weight;
+        for (var i = 0; i < points.length; ++i) {
+            if (points[i].weight < minWeight) {
+                minWeight = points[i].weight;
+            }
+            if (points[i].weight > maxWeight) {
+                maxWeight = points[i].weight;
             }
         }
-        
-        var total = points[points.length - 1].value.weight.value - points[0].value.weight.value;
+
         for (var i = 1; i < 100; ++i) {
-            var p1W = (i - 1) * total / 100.0;
-            var p2W = i * total / 100.0;
+            var c = (i - 1) / 100;
+            var p1W = (1 - c) * minWeight + c * maxWeight;
+            c = i / 100;
+            var p2W = (1 - c) * minWeight + c * maxWeight;
 
-            var p1L = 0;
-            while (points[p1L].value.weight.value > p1W)
-                p1L++;
+            var localPos = bezCurveInstance.interface.getEnclosingPointsAndLocalWeight(bezCurveInstance, points, p1W);
+            var p1Pos = bezCurveInstance.interface.getPoint(bezCurveInstance, localPos.left, localPos.right, localPos.localWeight);
 
-            var p2L = p1L;
-            while (points[p2L].value.weight.value > p2W)
-                p2L++;
-
-            var p1Pos = (p1W - points[p1L].value.weight.value) / (points[p1L + 1].value.weight.value - points[p1L].value.weight.value);
-            var p2Pos = (p2W - points[p2L].value.weight.value) / (points[p2L + 1].value.weight.value - points[p2L].value.weight.value);
-
-            var tr = require('./transform');
-
-            var leftGO = searchGO(go, points[p1L].value.point.value);
-            var rightGO = searchGO(go, points[p1L + 1].value.point.value);
-            
-            
-            var leftPoint = tr.getPosition(searchGO(go, points[p1L].value.point.value), { x: 0, y: 0 }, viewportSettings);
-            var rightPoint = tr.getPosition(searchGO(go, points[p1L + 1].value.point.value), { x: 0, y: 0 }, viewportSettings);
-
-
-            p1Pos = { x: (1 - p1Pos) * leftPoint.x + p1Pos * rightPoint.x, y: (1 - p1Pos) * leftPoint.y + p1Pos * rightPoint.y };
-
-            leftPoint = tr.getPosition(searchGO(go, points[p2L].value.point.value), { x: 0, y: 0 }, viewportSettings);
-            rightPoint = tr.getPosition(searchGO(go, points[p2L + 1].value.point.value), { x: 0, y: 0 }, viewportSettings);
-
-            p2Pos = { x: (1 - p2Pos) * leftPoint.x + p2Pos * rightPoint.x, y: (1 - p2Pos) * leftPoint.y + p2Pos * rightPoint.y };
+            localPos = bezCurveInstance.interface.getEnclosingPointsAndLocalWeight(bezCurveInstance, points, p2W);
+            var p2Pos = bezCurveInstance.interface.getPoint(bezCurveInstance, localPos.left, localPos.right, localPos.localWeight);
 
             context.beginPath();
             context.moveTo(p1Pos.x, p1Pos.y);
