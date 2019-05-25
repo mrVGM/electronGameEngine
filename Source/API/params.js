@@ -39,6 +39,8 @@ var params = {
         if (param.type === 'fileObject') {
             return params.renderFileObjectParam(param, settings);
         }
+        var err = new Error();
+        console.log('Unknown parameter', err);
         return 'Unknown parameter';
     },
     renderCustom: function (param, settings) {
