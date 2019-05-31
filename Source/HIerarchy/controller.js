@@ -30,6 +30,58 @@ var controller = {
 
         var guid = require('../EventHandling/guidGen');
 
+        function minGoId(go) {
+            var res = go.id;
+            for (var i = 0; i < go.children.length; ++i) {
+                var curChildMin = minGoId(go.children[i]);
+                if (res > curChildMin) {
+                    res = curChildMin;
+                }
+            }
+            return res;
+        }
+
+        function updateIds(go, base, newBase) {
+            go.id -= base;
+            go.id += newBase;
+            for (var i = 0; i < go.children.length; ++i) {
+                updateIds(go.children[i], base, newBase);
+            }
+        }
+
+        function updateParam(p, base, newBase) {
+            if (p.type === 'gameObject') {
+                p.value -= base;
+                p.value += newBase;
+                return;
+            }
+            if (p.type === 'array') {
+                for (var i = 0; i < p.value.length; ++i) {
+                    updateParam(p.value[i], base, newBase);
+                }
+                return;
+            }
+            if (p.type === 'custom') {
+                updateParams(p.value, base, newBase);
+                return;
+            }
+        }
+
+        function updateParams(params, base, newBase) {
+            for (var prop in params) {
+                updateParam(params[prop], base, newBase);
+            }
+        }
+
+        function updateComponents(go, base, newbase) {
+            for (var i = 0; i < go.components.length; ++i) {
+                updateParams(go.components[i].instance.params, base, newbase);
+            }
+            for (var i = 0; i < go.children.length; ++i) {
+                updateComponents(go.children[i], base, newbase);
+            }
+        }
+
         var ctrl = {
             subwindowId: undefined,
             expandedMap: {},
@@ -101,55 +153,6 @@ var controller = {
                                         var fs = require('fs');
                                         var projectModel = require('../Project/model');
                                         fs.readFile(projectModel.getProjectFolder() + fe.path, function (err, data) {
-
-                                            function minGoId(go) {
-                                                var res = go.id;
-                                                for (var i = 0; i < go.children.length; ++i) {
-                                                    var curChildMin = minGoId(go.children[i]);
-                                                    if (res > curChildMin) {
-                                                        res = curChildMin;
-                                                    }
-                                                }
-                                                return res;
-                                            }
-
-                                            function updateIds(go, base, newBase) {
-                                                go.id -= base;
-                                                go.id += newBase;
-                                                for (var i = 0; i < go.children.length; ++i) {
-                                                    updateIds(go.children[i], base, newBase);
-                                                }
-                                            }
-
-                                            function updateParam(p, base, newBase) {
-                                                if (p.type === 'gameObject') {
-                                                    p.value -= base;
-                                                    p.value += newBase;
-                                                    return;
-                                                }
-                                                if (p.type === 'custom') {
-                                                    for (var prop in p.value) {
-                                                        updateParam(p.value[prop], base, newBase);
-                                                    }
-                                                    return;
-                                                }
-                                            }
-
-                                            function updateParams(params, base, newBase) {
-                                                for (var prop in params) {
-                                                    updateParam(params[prop], base, newBase);
-                                                }
-                                            }
-
-                                            function updateComponents(go, base, newbase) {
-                                                for (var i = 0; i < go.components.length; ++i) {
-                                                    updateParams(go.components[i].instance.params, base, newbase);
-                                                }
-                                                for (var i = 0; i < go.children.length; ++i) {
-                                                    updateComponents(go.children[i], base, newbase);
-                                                }
-                                            }
-
                                             data = data.toString();
                                             var go = JSON.parse(data);
                                             var gameObject = require('./gameObject');
@@ -157,7 +160,16 @@ var controller = {
 
                                             var base = minGoId(go);
                                             var moment = require('moment');
-                                            var newBase = moment.now();
+
+                                            var maxId = 0;
+                                            for (var i in controller.viewToGameObjectsMap) {
+                                                var cur = controller.viewToGameObjectsMap[i];
+                                                if (maxId < cur.id) {
+                                                    maxId = cur.id;
+                                                }
+                                            }
+                                            var newBase = maxId + 1;
+
                                             updateIds(go, base, newBase);
                                             updateComponents(go, base, newBase);
 

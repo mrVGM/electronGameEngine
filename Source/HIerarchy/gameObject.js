@@ -40,7 +40,7 @@ var gameObject = {
                 return res;
             }
             return serialize(go);
-        }
+        };
     },
     create: function () {
         var moment = require('moment');
