@@ -1,5 +1,8 @@
 <div class="anchor-element" component-index="<%= componentIndex %>">
-    <div><%= component.instance.name %></div>
+    <div>
+        <%= component.instance.name %>
+        <button delete-component-button="<%= componentIndex %>">Delete</button>
+    </div>
     <div style="position: relative; left: 5px;">
         <% for (var param in component.instance.params) { %>
             <%- paramsAPI.render(component.instance.params[param], { paramPath: param }) %>

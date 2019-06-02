@@ -142,6 +142,25 @@ var controller = {
 
                         eventManager.addCustom(ctrl.states.def.dragGameObjectListener);
                         eventManager.addCustom(ctrl.states.def.dropGameObjectListener);
+
+                        ctrl.eventPool.add({
+                            priority: 0,
+                            handle: function(e) {
+                                if (e.type !== 'click') {
+                                    return false;
+                                }
+                                var target = e.target;
+                                var deleteComponent = target.getAttribute('delete-component-button');
+                                if (!deleteComponent) {
+                                    return false;
+                                }
+                                deleteComponent = parseInt(deleteComponent);
+                                var go = ctrl.currentInspector.selected;
+                                go.components.splice(deleteComponent, 1);
+                                ctrl.render();
+                            },
+                            id: guid.generateId()
+                        });
                     },
                     exitState: function() {
                         var eventManager = require('../EventHandling/eventManager');
@@ -152,6 +171,8 @@ var controller = {
 
                         eventManager.removeCustom(ctrl.states.def.dragGameObjectListener);
                         eventManager.removeCustom(ctrl.states.def.dropGameObjectListener);
+
+                        ctrl.eventPool.clear();
                     },
                 },
                 disabled: {
