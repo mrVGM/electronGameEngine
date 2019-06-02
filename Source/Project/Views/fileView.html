@@ -16,8 +16,9 @@
     </div>
     <% if (fileEntry.children && fileEntry.children.length > 0 && ctrl.isExpanded(fileEntry.id)) { %>
     <div style="position: relative; left: 20px">
-        <% for (var i = 0; i < fileEntry.children.length; ++i) { %>
-            <% var child = ctrl.getFileEntryById(fileEntry.children[i]); %>
+        <% var sortedChildren = fileEntry.getChildrenSorted(ctrl); %>
+        <% for (var i = 0; i < sortedChildren.length; ++i) { %>
+            <% var child = ctrl.getFileEntryById(sortedChildren[i]); %>
             <%- child.renderSync(ctrl); %>
         <% } %>
     </div>

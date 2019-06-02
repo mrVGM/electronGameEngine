@@ -95,6 +95,31 @@ var fileEntry = {
                 var ejs = require('ejs');
                 return ejs.render(views[fileView], { fileEntry: fe, ctrl: controller });
             },
+            getChildrenSorted: function(ctrl) {
+                function compare(fe1, fe2) {
+                    var fe1Folder = ctrl.getFileEntryById(fe1).isFolder();
+                    var fe2Folder = ctrl.getFileEntryById(fe2).isFolder();
+
+                    if (fe1Folder && !fe2Folder) {
+                        return -1;
+                    }
+                    if (fe2Folder && !fe1Folder) {
+                        return 1;
+                    }
+                    return 0;
+                }
+                var res = [].concat(fe.children);
+                for (var i = 0; i < res.length - 1; ++i) {
+                    for (var j = i + 1; j < res.length; ++j) {
+                        if (compare(res[i], res[j]) > 0) {
+                            var tmp = res[i];
+                            res[i] = res[j];
+                            res[j] = tmp;
+                        }
+                    }
+                }
+                return res;
+            }
         };
         return fe;
     }
