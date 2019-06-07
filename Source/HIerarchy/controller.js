@@ -393,7 +393,7 @@ var controller = {
                                 }
                                 eventManager.raiseCustomEvent({ type: 'dropGameObject' });
                                 ctrl.state.setState(ctrl.states.def);
-                                return false;
+                                return true;
                             },
                             id: guid.generateId(),
                         };
@@ -402,6 +402,57 @@ var controller = {
                         eventManager.raiseCustomEvent({type: 'dragGameObject', gameObject: ctrl.stateContext.dragging.gameObject });
 
                         eventManager.addGlobal(ctrl.states.dragging.dropHandler);
+                        ctrl.eventPool.add({
+                            priority: 0,
+                            handle: function(e) {
+                                if (e.type !== 'mouseup') {
+                                    return false;
+                                }
+                                var target = e.target;
+                                if (!target.getAttribute('game-object-entry')) {
+                                    return false;
+                                }
+                                var goId = parseInt(target.getAttribute('game-object-entry'));
+
+                                var newParent = controller.viewToGameObjectsMap[goId];
+
+                                function canLinkTo(go, parent) {
+                                    if (!go.parent) {
+                                        return false;
+                                    }
+                                    var cur = parent;
+                                    while (cur) {
+                                        if (cur.id === go.id) {
+                                            return false;
+                                        }
+                                        cur = cur.parent;
+                                    }
+                                    return true;
+                                }
+
+                                function linkTo(go, parent) {
+                                    if (!canLinkTo(go, parent)) {
+                                        return;
+                                    }
+                                    var index;
+                                    for (var i = 0; i < go.parent.children.length; ++i) {
+                                        if (go.parent.children[i].id === go.id) {
+                                            index = i;
+                                            break;
+                                        }
+                                    }
+                                    go.parent.children.splice(index, 1);
+                                    go.parent = parent;
+                                    parent.children.push(go);
+
+                                    controller.refresh();
+                                }
+                                linkTo(ctrl.stateContext.dragging.gameObject, newParent);
+
+                                console.log(newParent);
+                            },
+                            id: guid.generateId(),
+                        });
                     },
                     exitState: function() {
                         var eventManager = require('../EventHandling/eventManager');
