@@ -4,6 +4,17 @@ var renameInput = 'renameView.html';
 var viewsFiles = [contextMenuView, renameInput];
 var viewsDir = __dirname + '\\Views\\';
 
+function repairPaths(fileEntry) {
+    var model = require('./model');
+    fileEntry.path = model.fileEntries[fileEntry.parent].path + '\\' + fileEntry.getName();
+    if (!fileEntry.children) {
+        return;
+    }
+    for (var i = 0; i < fileEntry.children.length; ++i) {
+        repairPaths(model.fileEntries[fileEntry.children[i]]);
+    }
+}
+
 var controller = {
     create: function () {
         var guid = require('../EventHandling/guidGen');
@@ -535,16 +546,6 @@ var controller = {
                 
                                 fs.exists(model.getProjectFolder() + newPath, function (res) {
 
-                                    function repairPaths(fileEntry) {
-                                        fileEntry.path = model.fileEntries[fileEntry.parent].path + '\\' + fileEntry.getName();
-                                        if (!fileEntry.children) {
-                                            return;
-                                        }
-                                        for (var i = 0; i < fileEntry.children.length; ++i) {
-                                            repairPaths(model.fileEntries[fileEntry.children[i]]);
-                                        }
-                                    }
-
                                     if (!res) {
                                         fs.rename(model.getProjectFolder() + fileEntry.path, model.getProjectFolder() + newPath, function (err) {
                                             if (!err) {
@@ -587,6 +588,80 @@ var controller = {
                         var eventManager = require('../EventHandling/eventManager');
                         eventManager.addGlobal(ctrl.states.dragging.dropHandler);
                         eventManager.raiseCustomEvent({ type: 'dragFileObject', fileObject: ctrl.stateContext.dragging.fileEntry });
+                        ctrl.eventPool.add({
+                            priority: 0,
+                            handle: function(e) {
+                                if (e.type !== 'mouseup') {
+                                    return false;
+                                }
+                                var target = e.target;
+                                if (!target.getAttribute('file-entry')) {
+                                    return false;
+                                }
+                                var newParent = parseInt(target.getAttribute('file-entry'));
+                                var model = require('./model');
+                                newParent = model.fileEntries[newParent];
+                                
+                                function canLinkTo(fe, parent) {
+                                    if (!fe.parent) {
+                                        return false;
+                                    }
+                                    if (!parent.isFolder()) {
+                                        return false;
+                                    }
+                                    var cur = parent;
+                                    while (cur) {
+                                        if (cur.id === fe.id) {
+                                            return false;
+                                        }
+                                        cur = cur.parent;
+                                    }
+                                    return true;
+                                }
+
+                                function linkTo(fe, parent) {
+                                    if (!canLinkTo(fe, parent)) {
+                                        return;
+                                    }
+                                    var fs = require('fs');
+                                    var name = fe.getName();
+                                    var model = require('./model');
+
+                                    fs.rename(fe.getAbsolutePath(), parent.getAbsolutePath() + '\\' + name, function(err) {
+
+                                        if (err) {
+                                            console.log(err);
+                                            return;
+                                        }
+
+                                        var origParent = fe.getParent();
+                                        var index;
+                                        for (var i = 0; i < origParent.children.length; ++i) {
+                                            if (origParent.children[i] === fe.id) {
+                                                index = i;
+                                                break;
+                                            }
+                                        }
+                                        console.log(index);
+
+                                        origParent.children.splice(index, 1);
+                                        parent.children.push(fe.id);
+                                        fe.parent = parent.id.toString();
+
+                                        fe.path = parent.path + '\\' + name;
+
+                                        repairPaths(fe);
+
+                                        model.flush();
+                                        ctrl.render();
+                                    });
+                                }
+
+                                linkTo(ctrl.stateContext.dragging.fileEntry, newParent);
+                                return true;
+                            },
+                            id: guid.generateId(),
+                        });
                     },
                     exitState: function() {
                         var eventManager = require('../EventHandling/eventManager');

@@ -82,6 +82,18 @@ var fileEntry = {
                 var p = fe.path.split('\\');
                 return p[p.length - 1];
             },
+            getParent: function() {
+                if (!fe.parent) {
+                    return undefined;
+                }
+                var parentId = parseInt(fe.parent);
+                var model = require('./model');
+                return model.fileEntries[parentId];
+            },
+            getAbsolutePath: function() {
+                var model = require('./model');
+                return model.getProjectFolder() + fe.path;
+            },
             isFolder: function () {
                 var model = require('./model');
                 var fs = require('fs');
