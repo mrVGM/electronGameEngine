@@ -209,6 +209,8 @@ var controller = {
 
                 var wnd = rootElement.querySelector('[subwindow="' + ctrl.subwindowId + '"]');
 
+                var scrollTop = wnd.scrollTop;
+
                 var windowTypes = wnd.querySelectorAll('[window-type]');
                 for (var i = 0; i < windowTypes.length; ++i) {
                     var cur = windowTypes[i];
@@ -228,7 +230,15 @@ var controller = {
                     var insp = require('./gameObjectInspector');
                     ctrl.currentInspector = insp.create(controller.selected);
                 }
+
                 ctrl.currentInspector.render(wnd);
+                var mutationObserver = new MutationObserver(function(mutations) {
+                    console.log(mutations);
+                    var scrollable = rootElement.querySelector('[subwindow="' + ctrl.subwindowId + '"]');
+                    scrollable.scrollBy({top: scrollTop});
+                    mutationObserver.disconnect();
+                });
+                mutationObserver.observe(wnd, {attributes: false, characterData: false, childList: true});
             },
             disable: function() {
                 ctrl.state.setState(ctrl.states.disabled);
