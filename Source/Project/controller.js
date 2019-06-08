@@ -463,17 +463,19 @@ var controller = {
                                 var dialog = remote.dialog;
 
                                 var path = dialog.showOpenDialog({
-                                    properties: ['openFile']
+                                    properties: ['multiSelections']
                                 });
 
-                                path = path[0];
-                                var model = require('./model');
-                                if (!path.startsWith(model.getProjectPath())) {
-                                    ctrl.state.setState(ctrl.states.def);
+                                for (var i = 0; i < path.length; ++i) {
+                                    var curPath = path[i];
+                                    var model = require('./model');
+                                    if (!curPath.startsWith(model.getProjectPath())) {
+                                        ctrl.state.setState(ctrl.states.def);
+                                    }
+                                    curPath = curPath.substring(model.getProjectFolder().length);
+                                    var fileEntry = require('./fileEntry');
+                                    fileEntry.create(curPath);
                                 }
-                                path = path.substring(model.getProjectFolder().length);
-                                var fileEntry = require('./fileEntry');
-                                fileEntry.create(path);
                                 model.flush();
 
                                 ctrl.state.setState(ctrl.states.def);
