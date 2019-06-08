@@ -233,7 +233,6 @@ var controller = {
 
                 ctrl.currentInspector.render(wnd);
                 var mutationObserver = new MutationObserver(function(mutations) {
-                    console.log(mutations);
                     var scrollable = rootElement.querySelector('[subwindow="' + ctrl.subwindowId + '"]');
                     scrollable.scrollBy({top: scrollTop});
                     mutationObserver.disconnect();
