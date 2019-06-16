@@ -383,8 +383,16 @@ var controller = {
                                 var root = require('./model').root;
                                 for (var i = 0; i < root.components.length; ++i) {
                                     var comp = root.components[i];
-                                    if (comp.editorMethod) {
-                                        comp.editorMethod(comp.inst);
+                                    
+                                    var projectModel = require('../Project/model');
+                                    var script = projectModel.fileEntries[comp.script];
+                                    var absolutePathToScript = script.getAbsolutePath();
+                                    delete require.cache[require.resolve(absolutePathToScript)];
+                                    script = require(absolutePathToScript);
+
+                                    if (script.editorMethod) {
+                                        var model = require('./model');
+                                        script.editorMethod(comp.instance, ctrl, model);
                                     }
                                 }
                                 return true;
