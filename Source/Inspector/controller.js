@@ -51,7 +51,11 @@ var controller = {
                                         var model = require('../Project/model');
                                         var script = require(model.getProjectFolder() + fileEntry.path);
                                         var utils = require('../utils');
-                                        ctrl.currentInspector.addComponent({ script: fileEntry.id, instance: utils.createInstance(script) });
+                                        var comp = { script: fileEntry.id, instance: utils.createInstance(script) };
+                                        if (script.editorMethod) {
+                                            comp.editorMethod = script.editorMethod;
+                                        }
+                                        ctrl.currentInspector.addComponent(comp);
                                         ctrl.render();
                                         return true;
                                     }

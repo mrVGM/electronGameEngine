@@ -370,6 +370,28 @@ var controller = {
                             id: guid.generateId()
                         });
 
+                        ctrl.eventPool.add({
+                            priority: 0,
+                            handle: function(e) {
+                                if (e.type != 'click') {
+                                    return false;
+                                }
+                                var target = e.target;
+                                if (!target.getAttribute('run-editor-scripts-button')) {
+                                    return false;
+                                }
+                                var root = require('./model').root;
+                                for (var i = 0; i < root.components.length; ++i) {
+                                    var comp = root.components[i];
+                                    if (comp.editorMethod) {
+                                        comp.editorMethod(comp.inst);
+                                    }
+                                }
+                                return true;
+                            },
+                            id: guid.generateId()
+                        });
+
                         var eventManager = require('../EventHandling/eventManager');
                         eventManager.addCustom(ctrl.states.def.dragFileObjectListener);
                         eventManager.addCustom(ctrl.states.def.dropFileObjectListener);
