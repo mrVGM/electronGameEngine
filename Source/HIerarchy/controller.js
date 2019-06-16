@@ -392,7 +392,7 @@ var controller = {
 
                                     if (script.editorMethod) {
                                         var model = require('./model');
-                                        script.editorMethod(comp.instance, ctrl, model);
+                                        script.editorMethod(comp.instance, ctrl, model, projectModel);
                                     }
                                 }
                                 return true;
