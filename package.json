@@ -11,7 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "ejs": "^2.6.1",
-    "electron": "^4.0.8",
+    "electron": "^13.6.6",
     "moment": "^2.24.0"
   }
 }
