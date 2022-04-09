@@ -12,6 +12,6 @@
   "dependencies": {
     "ejs": "^2.6.1",
     "electron": "^4.0.8",
-    "moment": "^2.24.0"
+    "moment": "^2.29.2"
   }
 }
